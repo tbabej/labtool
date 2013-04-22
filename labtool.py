@@ -521,8 +521,6 @@ def main(args):
     show('')
 
     show('Estabilishing connection to RHEVM lab')
-    print 'This is URL'
-    print locals.URL
     rhevm = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
                   locals.CLUSTER_NAME, locals.CA_FILE)
 
