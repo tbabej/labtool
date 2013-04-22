@@ -1,0 +1,66 @@
+from ovirtsdk.xml import params
+
+URL = ''
+USERNAME = ''
+PASSWORD = ''
+CA_FILE = ''
+
+CLUSTER_NAME = ''
+HOST_NAME = ''
+DOMAIN = ''
+NFS_VM = ''
+VERSION = ''
+HOST = ''
+TEMPLATE_NAME = ''
+IP_BASE = ''
+
+# Set to your default LAB
+DEFAULT_LOCATION = 'LAB1'
+
+MB = 1024 * 1024
+GB = 1024 * MB
+MEMORY = 1 * GB
+
+# Set to your username
+USER = ''
+SCRIPT_FOLDER = 'labtool'
+
+
+def set_locale(lab):
+    global URL, USERNAME, PASSWORD, CA_FILE, CLUSTER_NAME, HOST_NAME, DOMAIN
+    global NFS_VM, VERSION, HOST, TEMPLATE_NAME, IP_BASE
+
+    if lab == 'LAB1':
+        URL = 'https://rhevm.example.com/api'
+        USERNAME = 'admin@example'
+        PASSWORD = 'adminpass'
+        CA_FILE = '/path/to/cert.crt'
+
+        CLUSTER_NAME = 'CLUSTER'
+        HOST_NAME = 'HOST'
+        DOMAIN = 'example.com'
+        NFS_VM = 'nfsvm'  # virtual machine that handles NFS,
+                          # this is used for speedup
+        HOST = None # set to
+        TEMPLATE_NAME = 'template-name'
+        VERSION = params.Version(major='3', minor='1')
+        IP_BASE = '192.168.10.'
+
+    elif lab == 'LAB2':
+        URL = 'https://rhevm.example.com/api'
+        USERNAME = 'admin@example'
+        PASSWORD = 'adminpass'
+        CA_FILE = '/path/to/cert.crt'
+
+        CLUSTER_NAME = 'CLUSTER'
+        HOST_NAME = 'HOST'
+        DOMAIN = 'example.com'
+        NFS_VM = 'nfsvm'  # virtual machine that handles NFS,
+                          # this is used for speedup
+        HOST = None # set to
+        TEMPLATE_NAME = 'template-name'
+        VERSION = params.Version(major='3', minor='0')
+        IP_BASE = '192.168.11.'
+
+    else:
+        raise ValueError("Wrong lab %s" % lab)

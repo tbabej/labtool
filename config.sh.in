@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# ========= User-defined parameters =========
+
+# Working directory
+WORKING_DIR=~/dev
+
+# Directory containing IPA sources
+IPA_DIR=/build/freeipa
+
+# Directory to create rpm files ine
+DIST_DIR=~/dev/dist
+
+# Directory with patches
+PATCH_DIR=~/dev/patches
+
+# Directory with logs
+LOG_DIR=~/dev/logs
+
+# Directory with replica files. Can be used comonnly, since every vm has unique
+# identification in its hostname.
+REPLICA_DIR=~/dev/replicas
+
+# Directory with IPA sources not in NFS
+ROOT_BUILD=/build
+
+# Username
+USER=`whoami`
+
+# ========== Configuration flags ============
+# Change either to 0 or 1
+
+# Stops and disables firewalld service if set to 0
+FIREWALL_ENABLED=0
+
+# Puts selinux into permissive mode if set to 0
+SELINUX_ENFORCING=0
+
+# =========== IPA parameters ================
+
+SERVER=`hostname`
+DOMAIN=`hostname | cut -d. -f2-`
+REALM=`echo $DOMAIN | tr '[:lower:]' '[:upper:]'`
+BASEDN=dc=${DOMAIN//./,dc=}
+FORWARDER=192.168.0.1  # Put your real forwarder IP here
+PASSWORD=blablabla
+
+ID=`hostname | cut -d- -f2 | cut -d. -f1`
+VM=`hostname | cut -d. -f1` # vm-075 e.g.
+
+# ======= Trust-related parameters ==========
+
+NETBIOS=`echo dom$ID | tr '[:lower:]' '[:upper:]'`
+AD_DOMAIN=`echo $DOMAIN | cut -d. -f2-`
+AD_PASSWORD=Secret123
+AD_IP=192.168.0.2  # Put your real AD IP here
+
+# ======= System-defined parameters =========
+
+# Either fc (for Fedora) or el (for RHEL)
+PLATFORM=`rpm -q kernel | cut -d. -f4 | head -n 1 | cut -c 1,2`
+
+# Sets correct architecture name
+ARCHITECTURE=`rpm -q kernel | cut -d. -f5 | head -n 1`
+
+# Sets the IP
+IP=`/usr/sbin/ip addr show eth0 | grep inet | grep -v inet6 | cut -d ' ' -f6 | cut -d '/' -f1`
+IP6=`/usr/sbin/ip addr show eth0 | grep inet6 | tail -n 1 | cut -d' ' -f6`
+ID_NOPREFIX=`echo $IP | cut -d. -f4`
+
+# Sets correct platform name
+case $PLATFORM in
+  fc) PLATFORM_NAME=Fedora;;
+  el) PLATFORM_NAME=RHEL;;
+esac

@@ -1,0 +1,19 @@
+[ipa-devel]
+name=IPA development $releasever - $basearch
+baseurl=http://jdennis.fedorapeople.org/ipa-devel/fedora/$releasever/$basearch/os/
+enabled=1
+gpgcheck=0
+
+
+[ipa-devel-debuginfo]
+name=IPA development $releasever - $basearch - Debug
+baseurl=http://jdennis.fedorapeople.org/ipa-devel/fedora/$releasever/$basearch/debug/
+enabled=0
+gpgcheck=0
+
+[ipa-devel-source]
+name=IPA development $releasever - Source
+baseurl=http://jdennis.fedorapeople.org/ipa-devel/fedora/$releasever/source/SRPMS/
+enabled=0
+gpgcheck=0
+
