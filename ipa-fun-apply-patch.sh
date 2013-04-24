@@ -1,8 +1,5 @@
 #! /bin/bash
 
-# If any command here fails, exit the script
-set -e
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
 
@@ -32,6 +29,15 @@ pushd $IPA_DIR
 
 # Apply the patch
 echo "Applying the patch $PATCH."
-git am $PATCH
+OUTPUT=`git am $PATCH 2>&1 | grep "Patch format detection failed."`
+
+if [[ `echo $OUTPUT | grep "Patch format detection failed."` != '' ]]
+then
+  echo 'Patch format detection failed, falling back to git apply utility.'
+  set -e
+  git apply $PATCH
+  git add --all
+  git commit -a -m "Testing patch $PATCH"
+fi
 
 popd
