@@ -54,6 +54,7 @@ NETBIOS=`echo dom$ID | tr '[:lower:]' '[:upper:]'`
 AD_DOMAIN=`echo $DOMAIN | cut -d. -f2-`
 AD_PASSWORD=Secret123
 AD_IP=192.168.0.2  # Put your real AD IP here
+AD_CERTIFICATE_PATH=~/ad_cert.cer
 
 # ======= System-defined parameters =========
 
