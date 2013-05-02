@@ -134,14 +134,20 @@ class RHEVM():
                        password=self.password,
                        ca_file=self.ca_file)
 
-    def check_arguments(self, name, template):
-        show('Checking whether given template exists')
-        if self.api.templates.get(template) is None:
-            raise ValueError('Template %s does not exist' % template)
+    def check_arguments(self, name, template, connect):
 
-        show('Checking whether given VM name is not used')
-        if self.api.vms.get(name) is not None:
-            raise ValueError('Given VM name %s is already used' % name)
+        if connect:
+            show('Checking whether given VM exists')
+            if self.api.vms.get(name) is None:
+                raise ValueError('Given VM name %s does not exist' % name)
+        else:
+            show('Checking whether given template exists')
+            if self.api.templates.get(template) is None:
+                raise ValueError('Template %s does not exist' % template)
+
+            show('Checking whether given VM name is not used')
+            if self.api.vms.get(name) is not None:
+                raise ValueError('Given VM name %s is already used' % name)
 
     def create_vm(self, name, memory, template, desc):
         """Creates a VM from given parameters and returns its hostname."""
@@ -251,6 +257,10 @@ class RHEVM():
 
         show.untab()
 
+    def get_description(self, name):
+        vm = self.api.vms.get(name)
+        return vm.get_description()
+
 
 class VM():
 
@@ -270,6 +280,8 @@ class VM():
             self.connect(user='root')
             self.cmd('sed -i.bak "s/Defaults    requiretty'
                      '/# Defaults    requiretty/g" /etc/sudoers')
+            self.cmd('setenforce 0')
+            self.cmd('sudo yum reinstall binutils -y', silent=True)
             self.close()
 
         self.connect()
@@ -533,17 +545,21 @@ def main(args):
     if args.install:
         validateInstall(args)
 
-    rhevm.check_arguments(args.name, args.template)
+    rhevm.check_arguments(args.name, args.template, args.connect)
 
     show.untab()
 
     show('Setting up: %s' % args.name)
     show.tab()
 
-    hostname = rhevm.create_vm(args.name, locals.MEMORY, args.template, 'auto')
+    if args.connect:
+        hostname = rhevm.get_description(args.name)
+    else:
+        hostname = rhevm.create_vm(args.name, locals.MEMORY, args.template,
+                                   'auto')
 
     if args.lab[0] == 'BOS':
-        vm = VM(hostname, locals.DOMAIN, rhevm, args.name, set_sudoers=False)
+        vm = VM(hostname, locals.DOMAIN, rhevm, args.name)
     else:
         vm = VM(hostname, locals.DOMAIN, rhevm, args.name)
 
@@ -764,6 +780,11 @@ if __name__ == '__main__':
     parser.add_argument('--test',
                         help='Run unit test suite. Use with --install ipa'
                              'option only.',
+                        action='store_true')
+
+    parser.add_argument('--connect',
+                        help='Do not create a new VM but rather connect '
+                             'to existing one.',
                         action='store_true')
 
     parser.add_argument('--name',
