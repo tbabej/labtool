@@ -651,25 +651,24 @@ def main(args):
                 replicas[i].install_packages(args.install)
                 show.untab()
 
-            if args.install[0] == 'ipa':
-                show.tab()
+                if args.install[0] == 'ipa':
+                    show.tab()
 
-                replicas[i].prepare_install(args.firewall, args.selinux,
-                                            args.trust, subdomain=vm.hostname)
-                replicas[i].add_nameserver(vm.hostname)
-                show.untab()
-                replicas[i].install_replica(vm.hostname)
+                    replicas[i].prepare_install(args.firewall,
+                                                args.selinux,
+                                                args.trust,
+                                                subdomain=vm.hostname)
+                    replicas[i].add_nameserver(vm.hostname)
+                    show.untab()
+                    replicas[i].install_replica(vm.hostname)
 
-                show('Post-install configuration:')
-                show.tab()
-                vm.check_services()
-                show.untab()
+                    show('Post-install configuration:')
+                    show.tab()
+                    vm.check_services()
+                    show.untab()
 
-#            if args.test:
-#                replicas[i].run_tests()
-
-            if args.trust:
-                replicas[i].setup_trust(hostname=vm.hostname)
+                if args.trust:
+                    replicas[i].setup_trust(hostname=vm.hostname)
 
             show.untab()
 
