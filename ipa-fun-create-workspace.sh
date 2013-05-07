@@ -30,7 +30,7 @@ else
 fi
 
 sudo mkdir $ROOT_BUILD
-sudo chown tbabej $ROOT_BUILD
+sudo chown $USER $ROOT_BUILD
 pushd $ROOT_BUILD
 
 # Clone FreeIPA so we have our own sandbox to play in
