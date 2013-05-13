@@ -261,6 +261,29 @@ class RHEVM():
         vm = self.api.vms.get(name)
         return vm.get_description()
 
+    def remove_vm(self, name):
+        show('Removing the VM:')
+        show.tab()
+
+        vm = self.api.vms.get(name)
+        if vm is None:
+            show('Could not obtain VM. Probably does not exist.')
+            return
+
+        try:
+            vm.stop()
+            show('Waiting for VM to reach Down status')
+        except Exception:
+            show('Vm is not running.')
+            pass
+
+        while self.api.vms.get(name).status.state != 'down':
+            sleep(1)
+
+        vm.delete()
+        show('{name} was removed.'.format(name=name))
+        show.untab()
+
 
 class VM():
 
@@ -280,8 +303,6 @@ class VM():
             self.connect(user='root')
             self.cmd('sed -i.bak "s/Defaults    requiretty'
                      '/# Defaults    requiretty/g" /etc/sudoers')
-            self.cmd('setenforce 0')
-            self.cmd('sudo yum reinstall binutils -y', silent=True)
             self.close()
 
         self.connect()
@@ -536,6 +557,10 @@ def main(args):
     rhevm = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
                   locals.CLUSTER_NAME, locals.CA_FILE)
 
+    # We need to remove the VM before running check_arguments()
+    if args.remove:
+        rhevm.remove_vm(args.name)
+
     show('Running pre-setup checks:')
     show.tab()
 
@@ -784,6 +809,10 @@ if __name__ == '__main__':
     parser.add_argument('--connect',
                         help='Do not create a new VM but rather connect '
                              'to existing one.',
+                        action='store_true')
+
+    parser.add_argument('--remove',
+                        help='Remove VM in case it already exists.',
                         action='store_true')
 
     parser.add_argument('--name',
