@@ -33,6 +33,9 @@ sudo mkdir $ROOT_BUILD
 sudo chown $USER $ROOT_BUILD
 pushd $ROOT_BUILD
 
+# Remove any remnants of previous repositories
+rm -rf freeipa
+
 # Clone FreeIPA so we have our own sandbox to play in
 if [[ `ls | wc -l` == 0 ]]
 then
