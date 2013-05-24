@@ -34,10 +34,10 @@ sudo chown -R `whoami` .
 
 # Build ALL the rpms
 rm -f $DIST_DIR/freeipa*
+rm -f dist/rpms/freeipa*
 make -s all rpms 2>&1
 
 # Copy the result into DIST_DIR
-rm -f $DIST_DIR/freeipa*
 cp dist/rpms/freeipa* $DIST_DIR/
 
 popd
