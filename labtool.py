@@ -556,9 +556,10 @@ def main(args):
     show('***** Welcome to LabTool *****')
     show('')
 
-    show('Estabilishing connection to RHEVM lab')
-    rhevm = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
-                  locals.CLUSTER_NAME, locals.CA_FILE)
+    if not args.local:
+        show('Estabilishing connection to RHEVM lab')
+        rhevm = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
+                      locals.CLUSTER_NAME, locals.CA_FILE)
 
     # We need to remove the VM before running check_arguments()
     if args.remove:
@@ -568,12 +569,14 @@ def main(args):
     show.tab()
 
     # Additional option validation
-    if args.build:
+    # TODO: support build validation in local VMs
+    if args.build and not args.local:
         validateBuild(args)
     if args.install:
         validateInstall(args)
 
-    rhevm.check_arguments(args.name, args.template, args.connect)
+    if not args.local:
+        rhevm.check_arguments(args.name, args.template, args.connect)
 
     show.untab()
 
@@ -582,6 +585,10 @@ def main(args):
 
     if args.connect:
         hostname = rhevm.get_description(args.name)
+    elif args.local:
+        hostname = args.name.split('.')[0]
+        locals.DOMAIN = 'idm.com'
+        rhevm = None
     else:
         hostname = rhevm.create_vm(args.name, locals.MEMORY, args.template,
                                    'auto')
@@ -816,6 +823,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--remove',
                         help='Remove VM in case it already exists.',
+                        action='store_true')
+
+    parser.add_argument('--local',
+                        help='Flag that makes sure name is used as hostname.',
                         action='store_true')
 
     parser.add_argument('--name',
