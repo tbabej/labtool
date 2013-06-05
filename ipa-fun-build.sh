@@ -38,7 +38,7 @@ rm -f dist/rpms/freeipa*
 make -s all rpms 2>&1
 
 # Copy the result into DIST_DIR
-cp dist/rpms/freeipa* $DIST_DIR/
+cp $IPA_DIR/dist/rpms/freeipa* $DIST_DIR/
 
 popd
 
