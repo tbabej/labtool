@@ -36,16 +36,16 @@ then
 fi
 
 # Install the dependencies
-sudo yum install bind-dyndb-ldap selinux-policy-devel bash-completion -y
+sudo yum install bind-dyndb-ldap selinux-policy-devel bash-completion -y --enablerepo=updates-testing
 
 # We pass vm-xyz or local to the script if we want to install the dependencies
 if [[ $2 == "build" ]]
 then
   pushd $IPA_DIR
-  sudo yum install rpm-build `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"` -y
+  sudo yum install rpm-build `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"` -y --enablerepo=updates-testing
   #pushd $DIST_DIR
   #yum deplist * --disablerepo=updates-testing | grep provider | awk '{print $2}' | sort | uniq | grep -E "($ARCHITECTURE|noarch)" | sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
 fi
 
 # Update the system
-sudo yum update -y
+sudo yum update -y --enablerepo=updates-testing
