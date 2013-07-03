@@ -10,7 +10,7 @@ source $DIR/config.sh
 
 if [[ -d $DIST_DIR ]]
 then
-  sudo rm -rf $DIST_DIR/* $DIST_DIR/.*
+  sudo rm -rf $DIST_DIR/*
 fi
 
 mkdir -p $DIST_DIR
