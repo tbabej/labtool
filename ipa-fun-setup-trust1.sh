@@ -13,13 +13,6 @@ then
   NETBIOS=DOM`echo $1 | cut -d- -f2`
 fi
 
-# Check is hostname was properly set up during IPA installation
-if [[ `hostname | grep tbad` == '' ]]
-then
-  echo "The hostname is not properly set for auto trust installation."
-  exit 1
-fi
-
 # Obtain admin credentials
 echo $PASSWORD | kinit admin
 
@@ -29,5 +22,5 @@ sudo ipa-adtrust-install --netbios-name=$NETBIOS -a $PASSWORD --add-sids
 # Configure DNS only if on master
 if [[ $1 == '' ]]
 then
-  ipa dnszone-add $AD_DOMAIN --name-server=advm.$AD_DOMAIN --admin-email="hostmaster@$AD_DOMAIN.com" --force --forwarder=$AD_IP --forward-policy=only
+  ipa dnszone-add $AD_DOMAIN --name-server=advm.$AD_DOMAIN --admin-email="hostmaster@$AD_DOMAIN.com" --force --forwarder=$AD_IP --forward-policy=only --ip-address=$AD_IP
 fi
