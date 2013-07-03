@@ -8,6 +8,8 @@ source $DIR/config.sh
 
 sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns --forwarder=$FORWARDER
 
-# Restart the named service and add forwarder to be double sure
-sudo service named restart
-echo "nameserver $FORWARDER" | sudo tee -a /etc/resolv.conf
+# Add forwarder to be double sure
+if [[ cat /etc/resolv.conf | grep $FORWARDER == '' ]]
+then
+  echo "nameserver $FORWARDER" | sudo tee -a /etc/resolv.conf
+fi
