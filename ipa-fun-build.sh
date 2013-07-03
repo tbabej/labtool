@@ -8,23 +8,12 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
 
-if [[ ! $1 == "" ]]
-then
-  if [[ ! -d $WORKING_DIR/$1 ]]
-  then
-    echo "$WORKING_DIR/$1 does not exist"
-    exit 1
-  fi
-
-  DIST_DIR=$WORKING_DIR/$1/dist
-fi
-
 if [[ -d $DIST_DIR ]]
 then
-  sudo rm -rf $DIST_DIR
+  sudo rm -rf $DIST_DIR/* $DIST_DIR/.*
 fi
 
-mkdir $DIST_DIR
+mkdir -p $DIST_DIR
 
 pushd $IPA_DIR
 
