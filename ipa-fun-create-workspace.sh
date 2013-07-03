@@ -2,6 +2,13 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
 
+function recreate_dir(){
+# mkdir -p creates directory only if it does not exist
+  rm -rf $1
+  sudo mkdir -p $1
+  sudo chown -R $USER $1
+}
+
 if [[ $1 == 'original' ]]
 then
   GIT_PATH=git://git.fedorahosted.org/git/freeipa.git
@@ -13,24 +20,12 @@ else
   exit 1
 fi
 
-# Check if destination was given as option
-if [[ ! $2 == "" ]]
-then
-  if [[ -d $WORKING_DIR/$2 ]]
-  then
-    echo "$WORKING_DIR/$2 does exist, removing content."
-    sudo rm -rf $WORKING_DIR/$2
-  fi
+# Create working dir directory structure
+recreate_dir $WORKING_DIR
+recreate_dir $DIST_DIR
+recreate_dir $PATCH_DIR
+recreate_dir $LOG_DIR
 
-  echo "$WORKING_DIR/$2 does not exist, creating."
-  mkdir $WORKING_DIR/$2
-else
-  echo 'No destination given'
-  exit 1
-fi
-
-sudo mkdir $WORKING_DIR
-sudo chown -R $USER $WORKING_DIR
 pushd $WORKING_DIR
 
 # Remove any remnants of previous repositories
