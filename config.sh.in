@@ -6,7 +6,7 @@
 WORKING_DIR=~/dev
 
 # Directory containing IPA sources
-IPA_DIR=/build/freeipa
+IPA_DIR=~/dev/freeipa
 
 # Directory to create rpm files ine
 DIST_DIR=~/dev/dist
