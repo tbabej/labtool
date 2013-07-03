@@ -363,18 +363,18 @@ class VM():
             show('Creating workspace for this build')
             try:
                 self.cmd("bash labtool/ipa-fun-create-workspace.sh"
-                         " original {dest} {log}".format(**self.locals))
+                         " original {log}".format(**self.locals))
             except KeyboardInterrupt:
                 show('Falling back to backup mirror')
                 self.cmd("bash labtool/ipa-fun-create-workspace.sh"
-                         " backup {dest} {log}".format(**self.locals))
+                         " backup {log}".format(**self.locals))
 
             # apply patches on top of fresh master branch
             if action[0] == 'patch':
                 for patch_id in action[1:]:
                     show('Applying patch {patch}'.format(patch=patch_id))
                     self.cmd("bash labtool/ipa-fun-apply-patch.sh"
-                             " {patch} {dest} {log}".format(
+                             " {patch} {log}".format(
                                  patch=patch_id, **self.locals))
 
         elif action[0] == 'branch':
@@ -383,24 +383,24 @@ class VM():
             show('Creating workspace for this build')
             try:
                 self.cmd("bash labtool/ipa-fun-create-workspace.sh"
-                         " original {dest} {log}".format(**self.locals))
+                         " original {log}".format(**self.locals))
             except KeyboardInterrupt:
                 show('Falling back to backup mirror')
                 self.cmd("bash labtool/ipa-fun-create-workspace.sh"
-                         " backup {dest} {log}".format(**self.locals))
+                         " backup {log}".format(**self.locals))
 
             # Checkout to given branch
             show('Checking out to {branch}'.format(
                 branch=action[1]))
             self.cmd("bash labtool/ipa-fun-checkout.sh"
-                     " {branch} {dest} {log}".format(
+                     " {branch} {log}".format(
                          branch=action[1], **self.locals))
 
         self.install_dependencies('no', 'build')
 
         show('Building sources')
         self.cmd("bash labtool/ipa-fun-build.sh"
-                 " {dest} {log}".format(**self.locals))
+                 " {log}".format(**self.locals))
 
         show.untab()
 
@@ -416,13 +416,13 @@ class VM():
         # in either way install packages
         if action[1] == 'local':
             if self.locals.get('dest') != self.hostname:
-                show('Installing local rpm packages from {dest}'
+                show('Installing local rpm packages'
                      .format(**self.locals))
             else:
                 show('Installing local rpm packages')
 
             self.cmd("bash labtool/ipa-fun-install-rpms.sh"
-                     " {dest} {log}".format(**self.locals))
+                     " {log}".format(**self.locals))
 
         elif action[1] == 'repo' or action[1] == 'develrepo':
             show('Installing packages from repositories')
