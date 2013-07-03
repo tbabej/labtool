@@ -6,8 +6,10 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
 
+# Get the list of services
 TEXT=`sudo ipactl status 2>/dev/null | grep Service: `
 
+# Start each service that is not started, recursively, untill all are
 while [[ `echo "$TEXT" | grep STOPPED` != '' ]]
 do
   SERVICE=`echo "$TEXT" | grep STOPPED | head -n 1 | cut -d ' ' -f1`
