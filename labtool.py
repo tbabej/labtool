@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from subprocess import call
 from ovirtsdk.api import API
 from ovirtsdk.xml import params
 from time import sleep
@@ -371,6 +372,10 @@ class VM():
 
             # apply patches on top of fresh master branch
             if action[0] == 'patch':
+                # sync the patches
+                call('patchsync')
+                sleep(2)
+
                 for patch_id in action[1:]:
                     show('Applying patch {patch}'.format(patch=patch_id))
                     self.cmd("bash labtool/ipa-fun-apply-patch.sh"
@@ -587,7 +592,7 @@ def main(args):
         hostname = rhevm.get_description(args.name)
     elif args.local:
         hostname = args.name.split('.')[0]
-        locals.DOMAIN = 'idm.com'
+        locals.DOMAIN = 'ipa.com'
         rhevm = None
     else:
         hostname = rhevm.create_vm(args.name, locals.MEMORY, args.template,
