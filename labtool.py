@@ -374,7 +374,7 @@ class VM():
             if action[0] == 'patch':
                 # sync the patches
                 call('patchsync')
-                sleep(2)
+                sleep(15)
 
                 for patch_id in action[1:]:
                     show('Applying patch {patch}'.format(patch=patch_id))
@@ -414,7 +414,7 @@ class VM():
             show('Ipa-devel repository allowed')
         show('Installing dependencies')
         self.cmd("bash labtool/ipa-fun-install-dependencies.sh"
-                 " {devel} {build} {log}".format(devel=devel, build=build,
+                 " {build} {devel} {log}".format(devel=devel, build=build,
                                                  **self.locals))
 
     def install_packages(self, action):

@@ -1,6 +1,8 @@
-#!/bin/bash
-
 # ========= User-defined parameters =========
+
+# It is recommended that all dirs are subdirectories
+# of the WORKING_DIR. The scripts may often rely on
+# this fact in a subtle ways.
 
 # Working directory
 WORKING_DIR=~/dev
@@ -17,12 +19,8 @@ PATCH_DIR=~/dev/patches
 # Directory with logs
 LOG_DIR=~/dev/logs
 
-# Directory with replica files. Can be used comonnly, since every vm has unique
-# identification in its hostname.
+# Directory with replica files.
 REPLICA_DIR=~/dev/replicas
-
-# Directory with IPA sources not in NFS
-ROOT_BUILD=/build
 
 # Username
 USER=`whoami`
