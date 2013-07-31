@@ -17,7 +17,7 @@ fi
 echo $PASSWORD | kinit admin
 
 # Install support for trusts
-sudo ipa-adtrust-install --netbios-name=$NETBIOS -a $PASSWORD --add-sids
+sudo ipa-adtrust-install --netbios-name=$NETBIOS -a $PASSWORD --add-sids -U
 
 # Configure DNS only if on master
 if [[ $1 == '' ]]
