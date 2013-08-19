@@ -4,6 +4,8 @@ from ovirtsdk.xml import params
 from printer import show, notify
 from time import sleep
 
+import locals
+
 
 class VirtBackend(object):
 
@@ -48,24 +50,26 @@ class RHEVM(VirtBackend):
         show('VM creation:')
         show.tab()
 
+        # Set VM's parameters as defined in locals.py
         pars = params.VM(name=name,
                          memory=memory,
                          description=desc,
                          cluster=self.api.clusters.get(self.cluster),
                          template=self.api.templates.get(template))
 
+        # locals.HOST can be used to enforce usage of a particular host
         if locals.HOST is not None:
             pars.set_placement_policy(params.VmPlacementPolicy(
                                          host=self.api.hosts.get(locals.HOST),
                                          affinity='pinned'))
 
+        # Check whether the template exist, if so, create the VM
         if self.api.templates.get(template) is None:
             raise ValueError('Template does not exist.')
-
         vm = self.api.vms.add(pars)
-
         show('VM was created from Template successfully')
 
+        # Set corret permissions so that VM can be seen in WebAdmin
         admin_vm_manager_perm = params.Permission(
                                     role=self.api.roles.get('UserVmManager'),
                                     user=self.api.users.get('admin'))
@@ -73,6 +77,7 @@ class RHEVM(VirtBackend):
         vm.permissions.add(admin_vm_manager_perm)
         show('Permissions for admin to see VM set')
 
+        # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
         while self.api.vms.get(name).status.state != 'down':
             sleep(1)
@@ -83,11 +88,13 @@ class RHEVM(VirtBackend):
             while self.api.vms.get(name).status.state != 'up':
                 sleep(1)
 
+        # Obtain the IP address. It can take a while for the guest agent
+        # to start, so we wait 2 minutes here before giving up.
         show('Waiting to obtain IP address')
         show('Press CTRL+C to interrupt and enter manually.')
         counter = 0
         try:
-            while self.api.vms.get(name).get_guest_info() is None:
+            while self.get_ip(name) is None:
                 counter = counter + 1
                 if counter > 120:
                     break
@@ -96,27 +103,27 @@ class RHEVM(VirtBackend):
             counter = 100000
 
         if counter <= 120:
-            ip = self.api.vms.get(name).get_guest_info()\
-                     .get_ips().get_ip()[0].get_address()
-
+            ip = self.get_ip(name)
+            last_ip_segment = ip.split('.')[-1]
             show("IP address of the VM is %s" % ip)
-
-            desc = ip.split('.')[-1]
         else:
             notify('Enter the IP manually.')
 
-            desc = ''
+            last_ip_segment = ''
 
             while not (len(desc) > 0 and len(desc) < 4):
-                desc = raw_input("IP address could not be determined. "
-                                 "Enter the VM number (no leading zeros):")
+                last_ip_segment = raw_input("IP address could not be "
+                "determined. Enter the VM number (no leading zeros):")
 
-        if len(desc) == 1:
-            desc = "00%s" % desc
-        elif len(desc) == 2:
-            desc = "0%s" % desc
+        # Update the description
+        if len(last_ip_segment) == 1:
+            desc = "00%s" % last_ip_segment
+        elif len(last_ip_segment) == 2:
+            desc = "0%s" % last_ip_segment
+
         hostname = "vm-%s" % desc
 
+        # Set the VM's description so that it can be identified in WebAdmin
         vm = self.api.vms.get(name)
         vm.set_description(hostname)
         vm.update()
@@ -150,9 +157,15 @@ class RHEVM(VirtBackend):
 
         show.untab()
 
+    # IS this actually good for anything?
     def get_description(self, name):
         vm = self.api.vms.get(name)
         return vm.get_description()
+
+    def get_ip(self, name):
+        if self.api.vms.get(name).get_guest_info():
+            return self.api.vms.get(name).get_guest_info()\
+                       .get_ips().get_ip()[0].get_address()
 
     def remove_vm(self, name):
         show('Removing the VM:')
