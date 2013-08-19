@@ -1,6 +1,9 @@
 from ovirtsdk.api import API
 from ovirtsdk.xml import params
 
+from printer import show, notify
+from time import sleep
+
 
 class VirtBackend(object):
 

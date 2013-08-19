@@ -1,3 +1,6 @@
+import dbus
+
+
 class Printer():
 
     def __init__(self):
@@ -19,5 +22,22 @@ class Printer():
 
     def talk(self):
         self.silence = False
+
+
+def notify(body, headline='Labtool Ready!', app_name='LabTool', app_icon='',
+        timeout=50000, actions=[], hints=[], replaces_id=0):
+    try:
+        _bus_name = 'org.freedesktop.Notifications'
+        _object_path = '/org/freedesktop/Notifications'
+        _interface_name = _bus_name
+
+        session_bus = dbus.SessionBus()
+        obj = session_bus.get_object(_bus_name, _object_path)
+        interface = dbus.Interface(obj, _interface_name)
+        interface.Notify(app_name, replaces_id, app_icon,
+                headline, body, actions, hints, timeout)
+    except Exception:
+        print body
+
 
 show = Printer()
