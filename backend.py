@@ -8,7 +8,7 @@ import locals
 import util
 
 import libvirt
-import etree
+from lxml import etree
 
 
 class VirtBackend(object):
@@ -204,6 +204,14 @@ class Libvirt(VirtBackend):
         if self.conn is None:
             raise RuntimeError("Failed to connect to the hypervisor.")
 
+    # empty implementation
+    def check_arguments(self, name, template, connect):
+        pass
+
+    # empty implementation
+    def get_description(self, name):
+        pass
+
     def get_domain(self, name):
         try:
             domain = self.conn.lookupByName(name)
@@ -233,7 +241,6 @@ class Libvirt(VirtBackend):
         template_domain = self.get_domain(template)
 
         if template_domain:
-
             output, errors = util.run(['virt-clone',
                                        '-o',
                                        template,
@@ -241,7 +248,6 @@ class Libvirt(VirtBackend):
                                        '-n',
                                        name,
                                      ])
-
 
     def reboot_vm(self, name):
         domain = self.get_domain(name)

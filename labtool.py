@@ -3,7 +3,7 @@
 import sys
 
 from printer import show, notify
-from backend import RHEVM
+from backend import RHEVM, LibVirt
 from vm import VM
 from parser import parse_options
 
