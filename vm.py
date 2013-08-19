@@ -4,19 +4,21 @@ import warnings
 from time import sleep
 from subprocess import call
 
+import locals
+
 # Ignore incoming warnings from SSHClient about SSH keys mismatch
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class VM():
 
-    def __init__(self, hostname, domain, rhevm, name, set_sudoers=True):
+    def __init__(self, hostname, domain, backend, name, set_sudoers=True):
         "Creates a connection to the client"
 
         self.hostname = hostname
         self.domain = domain
         self.fqdn = '%s.%s' % (self.hostname, self.domain)
-        self.rhevm = rhevm
+        self.backend = backend
         self.locals = dict()
         self.name = name
 
@@ -230,7 +232,7 @@ class VM():
         show.tab()
 
         self.close()
-        self.rhevm.reboot(self.name)
+        self.backend.reboot(self.name)
         self.connect()
 
         show.untab()

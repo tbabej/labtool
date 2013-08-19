@@ -5,6 +5,10 @@ from printer import show, notify
 from time import sleep
 
 import locals
+import util
+
+import libvirt
+import etree
 
 
 class VirtBackend(object):
@@ -16,7 +20,7 @@ class VirtBackend(object):
 class RHEVM(VirtBackend):
 
     def __init__(self, url, username, password, cluster, ca_file):
-        super(VirtBackend, self).__init__()
+        super(RHEVM, self).__init__()
 
         self.url = url
         self.username = username
@@ -189,3 +193,59 @@ class RHEVM(VirtBackend):
         vm.delete()
         show('{name} was removed.'.format(name=name))
         show.untab()
+
+
+class Libvirt(VirtBackend):
+
+    def __init__(self):
+        super(Libvirt, self).__init__()
+        self.conn = libvirt.open(None)
+
+        if self.conn is None:
+            raise RuntimeError("Failed to connect to the hypervisor.")
+
+    def get_domain(self, name):
+        try:
+            domain = self.conn.lookupByName(name)
+        except:
+            raise RuntimeError("VM with name {name} does not exist."
+                               .format(name=name))
+
+        return domain
+
+    def get_ip(self, name):
+        domain = self.get_domain(name)
+        desc = etree.fromstring(domain.XMLDesc(0))
+        macAddr = desc.find("devices/interface[@type='network']/mac")\
+                      .attrib["address"].lower().strip()
+
+        output, errors = util.run(['arp', '-n'])
+
+        lines = [line.split() for line in output.split("\n")[1:]]
+        matching = [line[0] for line in lines if line and line[2] == macAddr]
+
+        if matching:
+            return matching[0]
+
+    def create_vm(self, name, memory, template, desc):
+
+        # Check whether template VM exists
+        template_domain = self.get_domain(template)
+
+        if template_domain:
+
+            output, errors = util.run(['virt-clone',
+                                       '-o',
+                                       template,
+                                       '--auto-clone',
+                                       '-n',
+                                       name,
+                                     ])
+
+
+    def reboot_vm(self, name):
+        domain = self.get_domain(name)
+
+        if domain.reboot() != 0:
+            raise RuntimeError('VM reboot was not successful: {name}'
+                               .format(name=name))
