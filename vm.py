@@ -12,15 +12,22 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 class VM():
 
-    def __init__(self, hostname, domain, backend, name, set_sudoers=True):
+    def __init__(self,
+                 name=None,
+                 backend=None,
+                 hostname=None,
+                 domain=None,
+                 ip=None,
+                 set_sudoers=True):
         "Creates a connection to the client"
 
+        self.name = name
+        self.backend = backend
         self.hostname = hostname
         self.domain = domain
+        self.ip = ip
         self.fqdn = '%s.%s' % (self.hostname, self.domain)
-        self.backend = backend
         self.locals = dict()
-        self.name = name
 
         if set_sudoers:
             show('Configuring sudo commands execution in sudoers')

@@ -1,14 +1,13 @@
 from ovirtsdk.api import API
 from ovirtsdk.xml import params
-
-from printer import show, notify
 from time import sleep
-
-import locals
-import util
-
-import libvirt
 from lxml import etree
+import util
+import libvirt
+
+from vm import VM
+from printer import show, notify
+import locals
 
 
 class VirtBackend(object):
@@ -115,9 +114,10 @@ class RHEVM(VirtBackend):
 
             last_ip_segment = ''
 
-            while not (len(desc) > 0 and len(desc) < 4):
+            while not (len(last_ip_segment) > 0 and len(last_ip_segment) < 4):
                 last_ip_segment = raw_input("IP address could not be "
                 "determined. Enter the VM number (no leading zeros):")
+                ip = locals.IP_BASE + last_ip_segment
 
         # Update the description
         if len(last_ip_segment) == 1:
@@ -136,7 +136,9 @@ class RHEVM(VirtBackend):
 
         show.untab()
 
-        return hostname
+        # TODO: continue here
+        return VM(name=name, backend=self, hostname=hostname,
+                  domain=locals.DOMAIN, ip=ip)
 
     def reboot(self, name):
         show('Rebooting the VM:')
@@ -227,13 +229,28 @@ class Libvirt(VirtBackend):
         macAddr = desc.find("devices/interface[@type='network']/mac")\
                       .attrib["address"].lower().strip()
 
-        output, errors = util.run(['arp', '-n'])
+        output, errors, rc = util.run(['arp', '-n'])
 
-        lines = [line.split() for line in output.split("\n")[1:]]
-        matching = [line[0] for line in lines if line and line[2] == macAddr]
+        if rc == 0:
+            lines = [line.split() for line in output.split("\n")[1:]]
+            matching = [line[0] for line in lines
+                                if line and line[2] == macAddr]
 
-        if matching:
-            return matching[0]
+            if matching:
+                return matching[0]
+
+    def start(self, name):
+        if self.get_domain(name):
+            output, errors, rc = util.run(['virsh',
+                                           'start',
+                                           name,
+                                         ])
+
+            #FIXME: this requires tweaking
+            sleep(20)
+
+            if rc != 0:
+                raise RuntimeError("Could not start VM %s" % name)
 
     def create_vm(self, name, memory, template, desc):
 
@@ -241,13 +258,23 @@ class Libvirt(VirtBackend):
         template_domain = self.get_domain(template)
 
         if template_domain:
-            output, errors = util.run(['virt-clone',
-                                       '-o',
-                                       template,
-                                       '--auto-clone',
-                                       '-n',
-                                       name,
-                                     ])
+            output, errors, rc = util.run(['virt-clone',
+                                           '-o',
+                                           template,
+                                           '--auto-clone',
+                                           '-n',
+                                           name,
+                                         ])
+
+            if rc != 0:
+                raise RuntimeError("Could not clone VM %s" % template)
+
+            self.start(name)
+
+            ip = self.get_ip(name)
+
+            return VM(name=name, backend=self, hostname=None,
+                      domain=locals.DOMAIN, ip=ip)
 
     def reboot_vm(self, name):
         domain = self.get_domain(name)

@@ -2,4 +2,8 @@ import subprocess
 
 
 def run(args):
-    return subprocess.Popen(args, stdout=subprocess.PIPE).communicate()
+    child = subprocess.Popen(args, stdout=subprocess.PIPE)
+    stdout, stderr = child.communicate()
+    rc = child.returncode
+
+    return stdout, stderr, rc

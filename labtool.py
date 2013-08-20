@@ -80,12 +80,12 @@ def main(args):
 
     if not args.local:
         show('Estabilishing connection to RHEVM lab')
-        rhevm = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
+        backend = RHEVM(locals.URL, locals.USERNAME, locals.PASSWORD,
                       locals.CLUSTER_NAME, locals.CA_FILE)
 
     # We need to remove the VM before running check_arguments()
     if args.remove:
-        rhevm.remove_vm(args.name)
+        backend.remove_vm(args.name)
 
     show('Running pre-setup checks:')
     show.tab()
@@ -98,7 +98,7 @@ def main(args):
         validateInstall(args)
 
     if not args.local:
-        rhevm.check_arguments(args.name, args.template, args.connect)
+        backend.check_arguments(args.name, args.template, args.connect)
 
     show.untab()
 
@@ -106,19 +106,13 @@ def main(args):
     show.tab()
 
     if args.connect:
-        hostname = rhevm.get_description(args.name)
+        hostname = backend.get_description(args.name)
     elif args.local:
         hostname = args.name.split('.')[0]
         locals.DOMAIN = 'ipa.com'
         rhevm = None
     else:
-        hostname = rhevm.create_vm(args.name, locals.MEMORY, args.template,
-                                   'auto')
-
-    if args.lab[0] == 'BOS':
-        vm = VM(hostname, locals.DOMAIN, rhevm, args.name)
-    else:
-        vm = VM(hostname, locals.DOMAIN, rhevm, args.name)
+        vm = rhevm.create_vm(args.name, locals.MEMORY, args.template, 'auto')
 
     # If we wanted a clean VM, we finish here
     if args.clean:
