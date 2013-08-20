@@ -45,6 +45,7 @@ def set_locale(lab):
         TEMPLATE_NAME = 'template-name'
         VERSION = params.Version(major='3', minor='1')
         IP_BASE = '192.168.10.'
+        BACKEND = 'RHEVM'  # set this to the name of the Backend class
 
     elif lab == 'LAB2':
         URL = 'https://rhevm.example.com/api'
@@ -61,9 +62,12 @@ def set_locale(lab):
         TEMPLATE_NAME = 'template-name'
         VERSION = params.Version(major='3', minor='0')
         IP_BASE = '192.168.11.'
+        BACKEND = 'RHEVM'  # set this to the name of the Backend class
 
     elif lab == 'LOC':
         IP_BASE = '192.168.122.'
+        TEMPLATE_NAME = 'F19-temp'
+        BACKEND = 'LibVirt'  # set this to the name of the Backend class
 
     else:
         raise ValueError("Wrong lab %s" % lab)
