@@ -12,13 +12,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 class VM():
 
-    def __init__(self,
-                 name=None,
-                 backend=None,
-                 hostname=None,
-                 domain=None,
-                 ip=None,
-                 set_sudoers=True):
+    def __init__(self, name, backend, hostname, domain, ip, set_sudoers=True):
         "Creates a connection to the client"
 
         self.name = name
@@ -45,7 +39,7 @@ class VM():
 
         # show('Connecting to %s' % self.fqdn)
         try:
-            self.client.connect(self.fqdn, username=user)
+            self.client.connect(self.ip, username=user)
         except UserWarning:
             pass
 
