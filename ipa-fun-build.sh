@@ -20,8 +20,7 @@ source $DIR/config.sh
 # does not happen
 if [[ -d $DIST_DIR ]]
 then
-  rm -rf $DIST_DIR/*
-  rm -rf $DIST_DIR/.*
+  sudo rm -rf $DIST_DIR/*
 fi
 
 # Make sure that the directory does exist, since rm -rf supresses errors
