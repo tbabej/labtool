@@ -108,7 +108,9 @@ class VM():
 
         if build_args[0] == 'patch':
             show('Syncing the patches:')
-            util.run(['patchsync'])
+            # TODO: make this generic
+            util.run(['rsync', '-rc', '--delete', '~/Work/patches',
+                      '%s:dev/' % self.ip])
 
             for patch_id in build_args[1:]:
                 show('Applying patch {patch}'.format(patch=patch_id))
