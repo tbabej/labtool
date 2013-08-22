@@ -19,5 +19,8 @@ sudo ntpdate $1
 
 # TODO: support replica installation options
 
+# Install the dependencies
+sudo yum install bind-dyndb-ldap selinux-policy-devel bash-completion -y --enablerepo=updates-testing
+
 # Install the replica.
 sudo ipa-replica-install -U -p $PASSWORD -w $PASSWORD --ip-address $IP $REPLICA_DIR/replica-info-$SERVER.gpg

@@ -24,3 +24,14 @@ if [[ $1 == '' ]]
 then
   ipa dnszone-add $AD_DOMAIN --name-server=advm.$AD_DOMAIN --admin-email="hostmaster@$AD_DOMAIN.com" --force --forwarder=$AD_IP --forward-policy=only --ip-address=$AD_IP
 fi
+
+# Make sure that resolv.conf contains localhost
+if [[ `cat /etc/resolv.conf | grep $IP` == '' ]]
+then
+  sudo sed -i.bak "2a\nameserver $IP" /etc/resolv.conf
+fi
+
+echo $PASSWORD | kinit admin
+
+# Add the trust
+echo $AD_PASSWORD | ipa trust-add --type=ad $AD_DOMAIN --admin Administrator --password

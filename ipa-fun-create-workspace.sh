@@ -1,3 +1,19 @@
+#!/bin/bash
+
+##############################################################################
+# Author: Tomas Babej <tbabej@redhat.com>
+#
+# Creates workspace for the IPA developement and all the other
+#
+# Usage: $0
+# Returns: 0 on success, 1 on failure
+##############################################################################
+
+# Assumptions for the template:
+#     - it has workspace created by this script
+#     - user configured in the scripts has password configured in config.sh
+
+
 # Load the configuration
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
@@ -9,16 +25,8 @@ function recreate_dir(){
   sudo chown -R $USER $1
 }
 
-if [[ $1 == 'original' ]]
-then
-  GIT_PATH=git://git.fedorahosted.org/git/freeipa.git
-elif [[ $1 == 'backup' ]]
-then
-  GIT_PATH=https://github.com/encukou/freeipa.git
-else
-  echo "Usage: $0 original|backup"
-  exit 1
-fi
+GIT_PATH=git://git.fedorahosted.org/git/freeipa.git
+GIT_PATH_BACKUP=https://github.com/encukou/freeipa.git
 
 # Create working dir directory structure
 recreate_dir $WORKING_DIR
@@ -33,6 +41,14 @@ rm -rf freeipa
 
 # Clone FreeIPA so we have our own sandbox to play in
 git clone -q $GIT_PATH
+
+# If the cloning fails for whatever reason, fall back to the backup
+if [[ $0 -neq 0 ]]
+then
+  git clone -q $GIT_PATH_BACKUP
+fi
+
+# TODO: configure for the local repos
 
 popd
 

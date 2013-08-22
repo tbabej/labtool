@@ -13,6 +13,8 @@ VERSION = ''
 HOST = ''
 TEMPLATE_NAME = ''
 IP_BASE = ''
+BACKEND = ''
+REQUIRE_ROOT = False
 
 # Set to your default LAB
 DEFAULT_LOCATION = 'LAB1'
@@ -28,7 +30,7 @@ SCRIPT_FOLDER = 'labtool'
 
 def set_locale(lab):
     global URL, USERNAME, PASSWORD, CA_FILE, CLUSTER_NAME, HOST_NAME, DOMAIN
-    global NFS_VM, VERSION, HOST, TEMPLATE_NAME, IP_BASE
+    global NFS_VM, VERSION, HOST, TEMPLATE_NAME, IP_BASE, BACKEND, REQUIRE_ROOT
 
     if lab == 'LAB1':
         URL = 'https://rhevm.example.com/api'
@@ -68,6 +70,7 @@ def set_locale(lab):
         IP_BASE = '192.168.122.'
         TEMPLATE_NAME = 'F19-temp'
         BACKEND = 'LibVirt'  # set this to the name of the Backend class
+        REQUIRE_ROOT = True  # True for local labs, for autoconnection
 
     else:
         raise ValueError("Wrong lab %s" % lab)

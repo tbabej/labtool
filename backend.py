@@ -15,16 +15,26 @@ class VirtBackend(object):
     def __init__(self):
         pass
 
+    def create_vm(name):
+        """
+        Returns the VM object. Should require only the name parameter,
+        the rest of the parameters should be either positional with defaults
+        or passed via *args / **kwargs.
+        """
+
+        raise NotImplementedError("Backend class needs to override this")
+
 
 class RHEVM(VirtBackend):
 
-    def __init__(self, url, username, password, cluster, ca_file):
+    def __init__(self, url, username, password, cluster_name, ca_file,
+                 **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
         self.username = username
         self.password = password
-        self.cluster = cluster
+        self.cluster = cluster_name
         self.ca_file = ca_file
 
         self.api = API(url=self.url,
@@ -47,7 +57,12 @@ class RHEVM(VirtBackend):
             if self.api.vms.get(name) is not None:
                 raise ValueError('Given VM name %s is already used' % name)
 
-    def create_vm(self, name, memory, template, desc):
+    def make_snapshot(self, name):
+        show('Creating new snapshot')
+        pass
+
+    def create_vm(self, name, memory=locals.MEMORY,
+                  template=locals.TEMPLATE_NAME):
         """Creates a VM from given parameters and returns its hostname."""
 
         show('VM creation:')
@@ -56,7 +71,6 @@ class RHEVM(VirtBackend):
         # Set VM's parameters as defined in locals.py
         pars = params.VM(name=name,
                          memory=memory,
-                         description=desc,
                          cluster=self.api.clusters.get(self.cluster),
                          template=self.api.templates.get(template))
 
@@ -120,24 +134,28 @@ class RHEVM(VirtBackend):
                 ip = locals.IP_BASE + last_ip_segment
 
         # Update the description
+        desc = ''
         if len(last_ip_segment) == 1:
             desc = "00%s" % last_ip_segment
         elif len(last_ip_segment) == 2:
             desc = "0%s" % last_ip_segment
-
-        hostname = "vm-%s" % desc
+        else:
+            desc = last_ip_segment
 
         # Set the VM's description so that it can be identified in WebAdmin
         vm = self.api.vms.get(name)
-        vm.set_description(hostname)
+        vm.set_description(desc)
         vm.update()
 
-        show("Description set to %s" % hostname)
+        show("Description set to %s" % desc)
 
         show.untab()
 
-        # TODO: continue here
-        return VM(name=name, backend=self, hostname=hostname,
+        # Necessary because of RHEV bug
+        show("Pinging the VM")
+        output, errors, rc = util.run(['ping', '-c', '3', ip])
+
+        return VM(name=name, backend=self, hostname='vm-%s' % desc,
                   domain=locals.DOMAIN, ip=ip)
 
     def reboot(self, name):
@@ -162,11 +180,6 @@ class RHEVM(VirtBackend):
         sleep(60)
 
         show.untab()
-
-    # IS this actually good for anything?
-    def get_description(self, name):
-        vm = self.api.vms.get(name)
-        return vm.get_description()
 
     def get_ip(self, name):
         if self.api.vms.get(name).get_guest_info():
@@ -197,10 +210,10 @@ class RHEVM(VirtBackend):
         show.untab()
 
 
-class Libvirt(VirtBackend):
+class LibVirt(VirtBackend):
 
-    def __init__(self):
-        super(Libvirt, self).__init__()
+    def __init__(self, **kwargs):
+        super(LibVirt, self).__init__()
         self.conn = libvirt.open(None)
 
         if self.conn is None:
@@ -208,10 +221,6 @@ class Libvirt(VirtBackend):
 
     # empty implementation
     def check_arguments(self, name, template, connect):
-        pass
-
-    # empty implementation
-    def get_description(self, name):
         pass
 
     def get_domain(self, name):
@@ -252,10 +261,13 @@ class Libvirt(VirtBackend):
             if rc != 0:
                 raise RuntimeError("Could not start VM %s" % name)
 
-    def create_vm(self, name, memory, template, desc):
+    def create_vm(self, name, template=locals.TEMPLATE_NAME):
 
         # Check whether template VM exists
         template_domain = self.get_domain(template)
+
+        # TODO: check if it is running, if is, print down warning and shut
+        # it down
 
         if template_domain:
             output, errors, rc = util.run(['virt-clone',

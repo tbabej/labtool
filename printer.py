@@ -1,4 +1,5 @@
 import dbus
+import locals
 
 
 class Printer():
@@ -22,6 +23,10 @@ class Printer():
 
     def talk(self):
         self.silence = False
+
+    def debug(self, msg):
+        if locals.DEBUG:
+            print('[DEBUG]: ' + msg)
 
 
 def notify(body, headline='Labtool Ready!', app_name='LabTool', app_icon='',

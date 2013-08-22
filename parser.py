@@ -2,6 +2,72 @@ import argparse
 import locals
 import sys
 
+from printer import show
+from vm import VM
+
+
+def validateBuild(args):
+
+        available_build_actions = ('branch', 'patch', 'origin')
+
+        action = args.build[0]
+
+        if args.install and (args.install[1] == 'repo' or
+                             args.install[1] == 'develrepo'):
+            raise Exception('First building IPA from sources and then '
+                            'installing it from repo makes no sense. '
+                            'Think about it.')
+
+        if action not in available_build_actions:
+            raise ValueError('Unknown build action: {s}. Choose either branch '
+                             'or patch.'.format(s=action))
+
+        if action == 'patch':
+            show('Checking whether all given patches exist.')
+            vm = VM(locals.NFS_VM, locals.DOMAIN, None, None,
+                    set_sudoers=False)
+
+            patches_exist = True
+
+            for patch_id in args.build[1:]:
+                num = vm.cmd('bash labtool/ipa-fun-get-patch-name.sh %s'
+                             % patch_id, allow_failure=True, silent=True)
+
+                if num != 0:
+                    show('Inappropriate number of patches matching %s'
+                          % patch_id)
+                    patches_exist = False
+
+                if not patches_exist:
+                    raise ValueError("One of the given patches could not be "
+                                     "determined.")
+
+            show('Patch check successful.')
+            vm.close()
+
+        elif action == 'branch':
+            pass  # check that such branch indeed exists
+
+
+def validateInstall(args):
+        available_sources = ('local', 'repo', 'develrepo')
+        available_actions = ('ipa', 'packages')
+
+        action = args.install[0]
+        source = args.install[1]
+
+        if source not in available_sources:
+            raise ValueError('Unknown source: {s}. Choose either local '
+                             'or repo or develrepo.'.format(s=source))
+
+        if action not in available_actions:
+            raise ValueError('Unknown action: {s}. Choose either ipa '
+                             'or packages.'.format(s=action))
+
+        if source == 'local' and args.build is None:
+            # check that rpms are present or that build option is specified
+            pass
+
 
 def parse_options():
     parser = argparse.ArgumentParser(
@@ -102,5 +168,15 @@ def parse_options():
 
     if args.debug:
         sys.exit(0)
+
+    #show('Running pre-setup checks:')
+    #show.tab()
+
+    # Additional option validation
+    # TODO: support build validation in local VMs
+    #if args.build and not args.local:
+    #    validateBuild(args)
+    #if args.install:
+    #    validateInstall(args)
 
     return args
