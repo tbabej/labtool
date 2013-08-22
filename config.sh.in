@@ -16,9 +16,6 @@ DIST_DIR=~/dev/dist
 # Directory with patches
 PATCH_DIR=~/dev/patches
 
-# Directory with logs
-LOG_DIR=~/dev/logs
-
 # Directory with replica files.
 REPLICA_DIR=~/dev/replicas
 

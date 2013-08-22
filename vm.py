@@ -131,6 +131,11 @@ class VM():
 
         show.untab()
 
+    def create_workspace(self):
+        show('Creating workspace. You should really do this in the template!')
+        self.cmd("bash labtool/ipa-fun-create-workspace.sh"
+                 " {log}".format(**self.locals))
+
     def install_devel_packages(self, packages=[]):
         if packages:
             show('Installing packages from devel repo: {pckgs}'

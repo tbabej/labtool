@@ -154,6 +154,18 @@ def parse_options():
                         help='Flag that makes sure name is used as hostname.',
                         action='store_true')
 
+    parser.add_argument('--ipadevel',
+                        nargs='+',
+                        metavar=('PACKAGES'),
+                        help='Use this option to specify packages that should'
+                             'be installed from the ipa-devel repo.')
+
+    parser.add_argument('--workspace',
+                        help='Create workspace. This is not done automatically,'
+                             ' since it is better (performance-wise) to do this'
+                             ' once in the template.',
+                        action='store_true')
+
     parser.add_argument('--name',
                         help='The name of VM in the lab.',
                         required=True)

@@ -53,7 +53,9 @@ def main(args):
 
     vm.connect()
     vm.setup_logging_path()
-    vm.update_workspace()
+
+    if args.workspace:
+        vm.create_workspace()
 
     # TODO: backup a new snapshot
     backend.make_snapshot(args.name)
