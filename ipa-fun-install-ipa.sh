@@ -10,7 +10,7 @@ source $DIR/config.sh
 sudo yum install bind-dyndb-ldap bash-completion -y
 
 # Install the IPA server
-sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns
+sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns --no-forwarders
 
 # Add forwarder to be double sure
 
