@@ -32,10 +32,10 @@ pushd $IPA_DIR
 
 # Build can fail if the logged user does not have access to some files
 # This can happen if you played around with root in your home directory
-sudo chown -R `whoami` .
+sudo chown -R $USER .
 
 # Make sure there is no garbage in the dist directory
-rm -rf dist/*
+sudo rm -rf dist/*
 
 # Build ALL the rpms
 make -s all rpms 2>&1
