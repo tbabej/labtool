@@ -286,7 +286,17 @@ class LibVirt(VirtBackend):
 
             self.start(name)
 
-            ip = self.get_ip(name)
+            # TODO: need a proper retry function
+            ip = None
+            timeout = 0
+
+            while ip is None:
+                ip = self.get_ip(name)
+                sleep(2)
+                timeout += 2
+
+                if timeout > 20:
+                    raise RuntimeError("Could not determine IP of VM %s" % name)
 
             return VM(name=name, backend=self, hostname=None,
                       domain=locals.DOMAIN, ip=ip)
