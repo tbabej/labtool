@@ -39,16 +39,16 @@ class VM():
         self.close()
 
     def connect(self, user=locals.USER):
-        self.client = SSHClient()
-        self.client.set_missing_host_key_policy(WarningPolicy())
-
         # show('Connecting to %s' % self.fqdn)
         success = False
         timeout = 0
 
-        while not (success or timeout > 30):
+        while not (success or timeout > 60):
             try:
-                self.client.connect(self.ip, username=user)
+                self.client = SSHClient()
+                self.client.set_missing_host_key_policy(WarningPolicy())
+                self.client.connect(self.ip, username=user,
+                                    key_filename=locals.PRIVATE_KEY)
                 success = True
             except UserWarning:
                 show.debug('UserWarning ignored')
@@ -57,10 +57,13 @@ class VM():
                 sleep(2)
                 timeout += 2
 
+        if timeout > 60:
+            raise RuntimeError("Could not connect to the %s" % self.ip)
+
     def get_connection(self):
         return self.client
 
-    def cmd(self, command, allow_failure=False, silent=True):
+    def cmd(self, command, allow_failure=False, silent=False):
         i, o, e = self.client.exec_command(command)
 
         if not silent:
@@ -133,6 +136,7 @@ class VM():
 
     def create_workspace(self):
         show('Creating workspace. You should really do this in the template!')
+        self.cmd("echo test")
         self.cmd("bash labtool/ipa-fun-create-workspace.sh"
                  " {log}".format(**self.locals))
 

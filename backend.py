@@ -149,11 +149,11 @@ class RHEVM(VirtBackend):
 
         show("Description set to %s" % desc)
 
-        show.untab()
-
         # Necessary because of RHEV bug
         show("Pinging the VM")
         output, errors, rc = util.run(['ping', '-c', '3', ip])
+
+        show.untab()
 
         return VM(name=name, backend=self, hostname='vm-%s' % desc,
                   domain=locals.DOMAIN, ip=ip)
@@ -221,6 +221,9 @@ class LibVirt(VirtBackend):
 
     # empty implementation
     def check_arguments(self, name, template, connect):
+        pass
+
+    def make_snapshot(self, name):
         pass
 
     def get_domain(self, name):
