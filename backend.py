@@ -220,6 +220,7 @@ class LibVirt(VirtBackend):
     def make_snapshot(self, name):
         # Delete all the snapshots for this VM
         for snap in self.get_domain(name).listAllSnapshots():
+            show('Deleting snapshot %s' % snap.getName())
             snap.delete()
 
         stdout, stderr, rc = util.run(['virsh',
@@ -228,12 +229,18 @@ class LibVirt(VirtBackend):
                                        name
                                      ])
 
+        show('New snapshot created')
+
         if rc != 0:
             raise RuntimeError("Could not create snapshot for %s" % name)
 
     def revert_to_snapshot(self, name):
+        show.tab()
+
         if len(self.get_domain(name).listAllSnapshots()) != 1:
             raise RuntimeError("Incorrect number of snapshots for %s" % name)
+
+        show('Correct number of snapshots for %s' % name)
 
         snapshot = self.get_domain(name).listAllSnapshots()[0].getName()
 
@@ -248,6 +255,9 @@ class LibVirt(VirtBackend):
 
         if rc != 0:
             raise RuntimeError("Could not revert to snapshot for %s" % name)
+
+        show('Revert successful')
+        show.untab()
 
     def get_domain(self, name):
         try:
@@ -276,6 +286,8 @@ class LibVirt(VirtBackend):
 
     def start(self, name):
         if self.get_domain(name) and not self.get_domain(name).isActive():
+            show('Starting %s' % name)
+
             output, errors, rc = util.run(['virsh',
                                            'start',
                                            name,
@@ -292,6 +304,7 @@ class LibVirt(VirtBackend):
         # TODO: check if the VM with the name of name exists
 
         # Check whether template VM exists
+        show('Checking for existence of template')
         template_domain = self.get_domain(template)
 
         # TODO: check if it is running, if is, print down warning and shut
@@ -309,6 +322,8 @@ class LibVirt(VirtBackend):
             if rc != 0:
                 raise RuntimeError("Could not clone VM %s" % template)
 
+            show('Cloning successful')
+
             # TODO: check that it started, if not, wait
             self.start(name)
 
@@ -324,6 +339,7 @@ class LibVirt(VirtBackend):
                 if timeout > 20:
                     raise RuntimeError("Could not determine IP of VM %s" % name)
 
+            show('IP determined: %s' % ip)
             hostname = util.normalize_hostname(ip)
 
             return VM(name=name, backend=self, hostname=hostname,
@@ -331,7 +347,8 @@ class LibVirt(VirtBackend):
 
     def load_vm(self, name):
 
-        # TODO: check if the VM with the name of name exists
+        show('Loading VM %s' % name)
+        self.get_domain(name)  # this fails if VM does not exist
 
         # TODO: check that it started, if not, wait
         self.start(name)
@@ -349,6 +366,7 @@ class LibVirt(VirtBackend):
                 raise RuntimeError("Could not determine IP of VM %s" % name)
 
         hostname = util.normalize_hostname(ip)
+        show('IP determined: %s' % ip)
 
         return VM(name=name, backend=self, hostname=hostname,
                   domain=locals.DOMAIN, ip=ip)

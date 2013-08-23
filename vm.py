@@ -43,6 +43,8 @@ class VM():
         success = False
         timeout = 0
 
+        show('Connecting..')
+
         while not (success or timeout > 60):
             try:
                 self.client = SSHClient()
@@ -60,10 +62,12 @@ class VM():
         if timeout > 60:
             raise RuntimeError("Could not connect to the %s" % self.ip)
 
+        show('Connection successful!')
+
     def get_connection(self):
         return self.client
 
-    def cmd(self, command, allow_failure=False, silent=False):
+    def cmd(self, command, allow_failure=False, silent=True):
         i, o, e = self.client.exec_command(command)
 
         if not silent:

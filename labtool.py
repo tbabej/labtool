@@ -47,6 +47,7 @@ def main(args):
     #else:
 
     if backend.exists(args.name):
+        show('VM exists, reverting back to snapshot')
         backend.revert_to_snapshot(args.name)
         vm = backend.load_vm(args.name)
     else:
