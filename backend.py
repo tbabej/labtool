@@ -275,7 +275,7 @@ class LibVirt(VirtBackend):
                 return matching[0]
 
     def start(self, name):
-        if self.get_domain(name):
+        if self.get_domain(name) and not self.get_domain(name).isActive():
             output, errors, rc = util.run(['virsh',
                                            'start',
                                            name,
