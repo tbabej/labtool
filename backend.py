@@ -242,7 +242,8 @@ class LibVirt(VirtBackend):
                                        '--domain',
                                        name,
                                        '--snapshotname',
-                                       snapshot
+                                       snapshot,
+                                       '--force'
                                      ])
 
         if rc != 0:
