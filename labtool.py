@@ -56,6 +56,8 @@ def main(args):
 
     if args.workspace:
         vm.create_workspace()
+    else:
+        vm.update_workspace()
 
     # TODO: backup a new snapshot
     backend.make_snapshot(args.name)

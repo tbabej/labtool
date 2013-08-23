@@ -3,7 +3,7 @@
 ##############################################################################
 # Author: Tomas Babej <tbabej@redhat.com>
 #
-# Creates workspace for the IPA developement and all the other
+# Updates workspace for the IPA developement and all the other
 #
 # Usage: $0
 # Returns: 0 on success, 1 on failure
