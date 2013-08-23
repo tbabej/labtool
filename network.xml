@@ -1,0 +1,31 @@
+<network>
+  <name>LabTool network</name>
+  <uuid>7298118a-9716-4438-a1ed-073294fbe11c</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0' />
+  <mac address='52:54:00:ec:71:0a'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254' />
+      <host mac='de:ad:be:ef:00:02' name='vm-002' ip='192.168.123.2' />
+      <host mac='de:ad:be:ef:00:03' name='vm-003' ip='192.168.122.3' />
+      <host mac='de:ad:be:ef:00:04' name='vm-004' ip='192.168.122.4' />
+      <host mac='de:ad:be:ef:00:05' name='vm-005' ip='192.168.122.5' />
+      <host mac='de:ad:be:ef:00:06' name='vm-006' ip='192.168.122.6' />
+      <host mac='de:ad:be:ef:00:07' name='vm-007' ip='192.168.122.7' />
+      <host mac='de:ad:be:ef:00:08' name='vm-008' ip='192.168.122.8' />
+      <host mac='de:ad:be:ef:00:09' name='vm-009' ip='192.168.122.9' />
+      <host mac='de:ad:be:ef:00:10' name='vm-010' ip='192.168.122.10' />
+      <host mac='de:ad:be:ef:00:11' name='vm-011' ip='192.168.122.11' />
+      <host mac='de:ad:be:ef:00:12' name='vm-012' ip='192.168.122.12' />
+      <host mac='de:ad:be:ef:00:13' name='vm-013' ip='192.168.122.13' />
+      <host mac='de:ad:be:ef:00:14' name='vm-014' ip='192.168.122.14' />
+      <host mac='de:ad:be:ef:00:15' name='vm-015' ip='192.168.122.15' />
+      <host mac='de:ad:be:ef:00:16' name='vm-016' ip='192.168.122.16' />
+      <host mac='de:ad:be:ef:00:17' name='vm-017' ip='192.168.122.17' />
+      <host mac='de:ad:be:ef:00:18' name='vm-018' ip='192.168.122.18' />
+      <host mac='de:ad:be:ef:00:19' name='vm-019' ip='192.168.122.19' />
+      <host mac='de:ad:be:ef:00:20' name='vm-020' ip='192.168.122.20' />
+    </dhcp>
+  </ip>
+</network>

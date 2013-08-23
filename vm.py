@@ -76,6 +76,8 @@ class VM():
             else:
                 show.debug(line.strip())
 
+        # It is important to print output here at least at the debug level
+        # to empty the buffer
         for line in o.readlines():
             print_out(line)
         for line in e.readlines():
@@ -252,30 +254,12 @@ class VM():
         show.untab()
 
     def setup_trust(self, hostname=''):
-        show('Setting up AD Trust:')
-        show.tab()
+        show('Setting up AD Trust..')
 
-        show('Configuring VM')
-        self.cmd("bash labtool/ipa-fun-setup-trust1.sh"
+        self.cmd("bash labtool/ipa-fun-setup-trust.sh"
                  " {hostname} {log}".format(hostname=hostname, **self.locals))
 
-        # We need to reboot the VM to setup trust
-        show('Rebooting:')
-        show.tab()
-
-        self.close()
-        self.backend.reboot(self.name)
-        self.connect()
-
-        show.untab()
-
-        show('Post-reboot trust configuration')
-        ret = self.cmd("bash labtool/ipa-fun-setup-trust2.sh"
-                       " {log}".format(**self.locals), allow_failure=True)
-        if ret:
-            show('Trust setup failed.')
-
-        show.untab()
+        show('Completed!')
 
     def set_format(self, **kwargs):
         self.locals.update(kwargs)

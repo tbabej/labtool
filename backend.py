@@ -269,6 +269,23 @@ class LibVirt(VirtBackend):
 
         return domain
 
+    def get_next_free_mac(self):
+        used_macs = [etree.fromstring(dom.XMLDesc(0))
+                    .find("devices/interface[@type='network']/mac")
+                    .attrib["address"].lower().strip()
+                    for dom in self.conn.listAllDomains()]
+
+        all_macs = ['de:ad:be:ef:00:0%s' % i for i in range(2, 10)] + \
+                   ['de:ad:be:ef:00:%s' % i for i in range(11, 21)]
+
+        available_macs = list(set(all_macs) - set(used_macs))
+
+        if available_macs:
+            return available_macs[0]
+        else:
+            raise RuntimeError("No MACs available. You have defined too many "
+                               "VMs.")
+
     def get_ip(self, name):
         domain = self.get_domain(name)
         desc = etree.fromstring(domain.XMLDesc(0))
@@ -313,12 +330,18 @@ class LibVirt(VirtBackend):
 
         if template_domain:
             show('Cloning..')
+
+            # Find out next available MAC address in the pool
+            new_mac = self.get_next_free_mac()
+
             output, errors, rc = util.run(['virt-clone',
                                            '-o',
                                            template,
                                            '--auto-clone',
                                            '-n',
                                            name,
+                                           '-m',
+                                           new_mac,
                                          ])
 
             if rc != 0:
@@ -330,17 +353,9 @@ class LibVirt(VirtBackend):
             show('Starting..')
             self.start(name)
 
-            # TODO: need a proper retry function
-            ip = None
-            timeout = 0
-
-            while ip is None:
-                ip = self.get_ip(name)
-                sleep(2)
-                timeout += 2
-
-                if timeout > 20:
-                    raise RuntimeError("Could not determine IP of VM %s" % name)
+            # Macs are tied to the IPs
+            last_mac_segment = new_mac.split(':')[-1]
+            ip = locals.IP_BASE + '%s' % int(last_mac_segment)
 
             show('IP determined: %s' % ip)
             hostname = util.normalize_hostname(ip)
