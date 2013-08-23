@@ -46,10 +46,14 @@ def main(args):
     #    locals.DOMAIN = 'ipa.com'
     #else:
 
-    vm = backend.create_vm(args.name,
-                           template=args.template or locals.TEMPLATE_NAME)
+    if backend.exists(args.name):
+        backend.revert_to_snapshot(args.name)
+        vm = backend.load_vm(args.name)
+    else:
+        vm = backend.create_vm(args.name,
+                               template=args.template or locals.TEMPLATE_NAME)
 
-    # TODO: support connecting to existing vm and reverting a snapshot
+    backend.make_snapshot(args.name)
 
     vm.connect()
     vm.setup_logging_path()

@@ -218,7 +218,35 @@ class LibVirt(VirtBackend):
         pass
 
     def make_snapshot(self, name):
-        pass
+        # Delete all the snapshots for this VM
+        for snap in self.get_domain(name).listAllSnapshots():
+            snap.delete()
+
+        stdout, stderr, rc = util.run(['virsh',
+                                       'snapshot-create',
+                                       '--domain',
+                                       name
+                                     ])
+
+        if rc != 0:
+            raise RuntimeError("Could not create snapshot for %s" % name)
+
+    def revert_to_snapshot(self, name):
+        if len(self.get_domain(name).listAllSnapshots()) != 1:
+            raise RuntimeError("Incorrect number of snapshots for %s" % name)
+
+        snapshot = self.get_domain(name).listAllSnapshots()[0].getName()
+
+        stdout, stderr, rc = util.run(['virsh',
+                                       'snapshot-revert',
+                                       '--domain',
+                                       name,
+                                       '--snapshotname',
+                                       snapshot
+                                     ])
+
+        if rc != 0:
+            raise RuntimeError("Could not revert to snapshot for %s" % name)
 
     def get_domain(self, name):
         try:
@@ -260,6 +288,8 @@ class LibVirt(VirtBackend):
 
     def create_vm(self, name, template=locals.TEMPLATE_NAME):
 
+        # TODO: check if the VM with the name of name exists
+
         # Check whether template VM exists
         template_domain = self.get_domain(template)
 
@@ -278,6 +308,7 @@ class LibVirt(VirtBackend):
             if rc != 0:
                 raise RuntimeError("Could not clone VM %s" % template)
 
+            # TODO: check that it started, if not, wait
             self.start(name)
 
             # TODO: need a proper retry function
@@ -297,9 +328,37 @@ class LibVirt(VirtBackend):
             return VM(name=name, backend=self, hostname=hostname,
                       domain=locals.DOMAIN, ip=ip)
 
+    def load_vm(self, name):
+
+        # TODO: check if the VM with the name of name exists
+
+        # TODO: check that it started, if not, wait
+        self.start(name)
+
+        # TODO: need a proper retry function
+        ip = None
+        timeout = 0
+
+        while ip is None:
+            ip = self.get_ip(name)
+            sleep(2)
+            timeout += 2
+
+            if timeout > 20:
+                raise RuntimeError("Could not determine IP of VM %s" % name)
+
+        hostname = util.normalize_hostname(ip)
+
+        return VM(name=name, backend=self, hostname=hostname,
+                  domain=locals.DOMAIN, ip=ip)
+
     def reboot_vm(self, name):
         domain = self.get_domain(name)
 
         if domain.reboot() != 0:
             raise RuntimeError('VM reboot was not successful: {name}'
                                .format(name=name))
+
+    def exists(self, name):
+        domains = [dom.name() for dom in self.conn.listAllDomains()]
+        return name in domains

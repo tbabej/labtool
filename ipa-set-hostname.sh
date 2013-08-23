@@ -21,6 +21,7 @@ then
 fi
 
 HOSTNAME=$1
+HOSTNAME_SHORT=`echo $1 | cut -d. -f1`
 
 # Remove IPv6 if we are going for trusts
 if [[ `echo $HOSTNAME | grep tbad` == '' ]]
@@ -29,7 +30,6 @@ then
 fi
 
 sudo hostname $HOSTNAME
+echo "$HOSTNAME" | sudo tee -a /etc/hostname
 echo "HOSTNAME=$HOSTNAME" | sudo tee -a /etc/sysconfig/network
-echo "$IP $HOSTNAME $VM" | sudo tee -a /etc/hosts
-sudo service network restart
-
+echo "$IP $HOSTNAME $HOSTNAME_SHORT" | sudo tee -a /etc/hosts
