@@ -109,7 +109,7 @@ class VM():
         if build_args[0] == 'patch':
             show('Syncing the patches:')
             # TODO: make this generic
-            util.run(['rsync', '-rc', '--delete', '~/Work/patches',
+            util.run(['rsync', '-rc', '--delete', '/home/tbabej/Work/patches',
                       '%s:dev/' % self.ip])
 
             for patch_id in build_args[1:]:
@@ -169,11 +169,24 @@ class VM():
             self.cmd("bash labtool/ipa-fun-install-repo.sh"
                      " {log}".format(**self.locals))
 
-    def set_hostname(self, subdomain=''):
-            show('Changing hostname')
-            self.cmd("bash labtool/ipa-set-hostname.sh"
-                     " {subdomain} {log}".format(subdomain=subdomain,
-                                                **self.locals))
+    def set_hostname(self, trust=False, subdomain='',
+                     domain=locals.DOMAIN):
+        show('Changing hostname')
+
+        last_ip_segment = self.ip.split('.')[-1]
+        hostname = 'vm-{ip_id}.'.format(ip_id=last_ip_segment)
+
+        if trust:
+            hostname += 'dom{ip_id}.tbad.'.format(ip_id=last_ip_segment)
+
+        hostname += self.domain
+
+        self.hostname = hostname
+        show.debug('Setting hostname to %s' % hostname)
+
+        self.cmd("bash labtool/ipa-set-hostname.sh"
+                 " {hostname} {log}".format(hostname=hostname,
+                                            **self.locals))
 
     def prepare_install(self, firewall, selinux, trust, subdomain=''):
 
@@ -197,11 +210,7 @@ class VM():
         self.cmd("bash labtool/ipa-set-selinux.sh"
                  " {setting} {log}".format(setting=switch, **self.locals))
 
-        # this changes the hostname to vm-xyz.domxyz.tbad.$DOMAIN
-        if trust:
-            self.set_hostname(subdomain=subdomain)
-
-        # apply current workarounds
+        # Apply current workarounds
         show('Applying workarounds for IPA install to work')
         self.cmd("bash labtool/ipa-fun-current-workarounds.sh"
                  " {log}".format(**self.locals))

@@ -60,6 +60,9 @@ def main(args):
     # TODO: backup a new snapshot
     backend.make_snapshot(args.name)
 
+    # Setup a new hostname
+    vm.set_hostname(trust=args.trust)
+
     # Install selected packages from ipa-devel repo
     if args.ipadevel:
         vm.install_devel_packages(packages=args.ipadevel)
