@@ -174,7 +174,7 @@ class VM():
         show('Changing hostname')
 
         last_ip_segment = self.ip.split('.')[-1]
-        hostname = 'vm-{ip_id}.'.format(ip_id=last_ip_segment)
+        hostname = self.hostname
 
         if trust:
             hostname += 'dom{ip_id}.tbad.'.format(ip_id=last_ip_segment)

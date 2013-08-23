@@ -134,20 +134,14 @@ class RHEVM(VirtBackend):
                 ip = locals.IP_BASE + last_ip_segment
 
         # Update the description
-        desc = ''
-        if len(last_ip_segment) == 1:
-            desc = "00%s" % last_ip_segment
-        elif len(last_ip_segment) == 2:
-            desc = "0%s" % last_ip_segment
-        else:
-            desc = last_ip_segment
+        hostname = util.normalize_hostname(ip)
 
         # Set the VM's description so that it can be identified in WebAdmin
         vm = self.api.vms.get(name)
-        vm.set_description(desc)
+        vm.set_description(hostname)
         vm.update()
 
-        show("Description set to %s" % desc)
+        show("Description set to %s" % hostname)
 
         # Necessary because of RHEV bug
         show("Pinging the VM")
@@ -155,7 +149,7 @@ class RHEVM(VirtBackend):
 
         show.untab()
 
-        return VM(name=name, backend=self, hostname='vm-%s' % desc,
+        return VM(name=name, backend=self, hostname=hostname,
                   domain=locals.DOMAIN, ip=ip)
 
     def reboot(self, name):
@@ -298,7 +292,9 @@ class LibVirt(VirtBackend):
                 if timeout > 20:
                     raise RuntimeError("Could not determine IP of VM %s" % name)
 
-            return VM(name=name, backend=self, hostname=None,
+            hostname = util.normalize_hostname(ip)
+
+            return VM(name=name, backend=self, hostname=hostname,
                       domain=locals.DOMAIN, ip=ip)
 
     def reboot_vm(self, name):
