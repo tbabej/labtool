@@ -223,13 +223,14 @@ class LibVirt(VirtBackend):
             show('Deleting snapshot %s' % snap.getName())
             snap.delete()
 
+        show('Creating new snapshot..')
         stdout, stderr, rc = util.run(['virsh',
                                        'snapshot-create',
                                        '--domain',
                                        name
                                      ])
 
-        show('New snapshot created')
+        show('Created!')
 
         if rc != 0:
             raise RuntimeError("Could not create snapshot for %s" % name)
@@ -311,6 +312,7 @@ class LibVirt(VirtBackend):
         # it down
 
         if template_domain:
+            show('Cloning..')
             output, errors, rc = util.run(['virt-clone',
                                            '-o',
                                            template,
@@ -325,6 +327,7 @@ class LibVirt(VirtBackend):
             show('Cloning successful')
 
             # TODO: check that it started, if not, wait
+            show('Starting..')
             self.start(name)
 
             # TODO: need a proper retry function

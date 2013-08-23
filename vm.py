@@ -67,14 +67,19 @@ class VM():
     def get_connection(self):
         return self.client
 
-    def cmd(self, command, allow_failure=False, silent=True):
+    def cmd(self, command, allow_failure=False, silent=False):
         i, o, e = self.client.exec_command(command)
 
-        if not silent:
-            for line in o.readlines():
+        def print_out(line):
+            if silent:
                 show(line.strip())
-            for line in e.readlines():
-                show(line.strip())
+            else:
+                show.debug(line.strip())
+
+        for line in o.readlines():
+            print_out(line)
+        for line in e.readlines():
+            print_out(line)
 
         return_code = o.channel.recv_exit_status()
 
@@ -127,6 +132,8 @@ class VM():
             self.cmd("bash labtool/ipa-fun-checkout.sh"
                      " {branch} {log}".format(branch=build_args[1],
                                               **self.locals))
+        else:
+            raise RuntimeError("Unknown action: %s" % build_args[0])
 
         show('Installing build dependencies')
         self.install_build_dependencies()
@@ -154,7 +161,6 @@ class VM():
                      .format(pckgs=' '.join(packages)))
 
     def install_build_dependencies(self):
-        show('Installing dependencies')
         self.cmd("bash labtool/ipa-fun-install-build-dependencies.sh"
                  " {log}".format(**self.locals))
 
@@ -175,7 +181,6 @@ class VM():
 
     def set_hostname(self, trust=False, subdomain='',
                      domain=locals.DOMAIN):
-        show('Changing hostname')
 
         last_ip_segment = self.ip.split('.')[-1]
         hostname = self.hostname
@@ -186,7 +191,7 @@ class VM():
         hostname += '.' + self.domain
 
         self.hostname = hostname
-        show.debug('Setting hostname to %s' % hostname)
+        show('Setting hostname to %s' % hostname)
 
         self.cmd("bash labtool/ipa-set-hostname.sh"
                  " {hostname} {log}".format(hostname=hostname,

@@ -54,8 +54,6 @@ def main(args):
         vm = backend.create_vm(args.name,
                                template=args.template or locals.TEMPLATE_NAME)
 
-    backend.make_snapshot(args.name)
-
     vm.connect()
     vm.setup_logging_path()
 
@@ -64,18 +62,18 @@ def main(args):
     else:
         vm.update_workspace()
 
-    # TODO: backup a new snapshot
-    backend.make_snapshot(args.name)
-
-    # Setup a new hostname
-    vm.set_hostname(trust=args.trust)
-
     # Install selected packages from ipa-devel repo
     if args.ipadevel:
         vm.install_devel_packages(packages=args.ipadevel)
 
+    show.untab()
+
     if args.build:
         vm.build(args.build)
+        backend.make_snapshot(args.name)
+
+    # Setup a new hostname
+    vm.set_hostname(trust=args.trust)
 
     if args.install:
         show('Preparing:')
