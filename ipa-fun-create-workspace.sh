@@ -45,6 +45,10 @@ then
   git clone $GIT_PATH_BACKUP
 fi
 
+# Install build and package dependencies
+./ipa-fun-install-build-dependnecies.sh
+./ipa-fun-install-package-dependnecies.sh
+
 # TODO: configure for the local repos
 
 popd

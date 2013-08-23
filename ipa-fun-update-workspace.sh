@@ -3,7 +3,7 @@
 ##############################################################################
 # Author: Tomas Babej <tbabej@redhat.com>
 #
-# Updates workspace for the IPA developement and all the other
+# Creates workspace for the IPA developement and all the other
 #
 # Usage: $0
 # Returns: 0 on success, 1 on failure
@@ -21,6 +21,10 @@ popd
 pushd ~/labtool
 git pull
 popd
+
+# Install build and package dependencies
+./ipa-fun-install-build-dependnecies.sh
+./ipa-fun-install-package-dependnecies.sh
 
 sudo yum update -y
 
