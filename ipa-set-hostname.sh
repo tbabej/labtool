@@ -30,6 +30,6 @@ then
 fi
 
 sudo hostname $HOSTNAME
-echo "$HOSTNAME" | sudo tee -a /etc/hostname
+echo "$HOSTNAME" | sudo tee /etc/hostname
 echo "HOSTNAME=$HOSTNAME" | sudo tee -a /etc/sysconfig/network
 echo "$IP $HOSTNAME $HOSTNAME_SHORT" | sudo tee -a /etc/hosts
