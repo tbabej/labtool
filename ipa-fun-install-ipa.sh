@@ -12,10 +12,6 @@ sudo yum install bind-dyndb-ldap bash-completion -y
 # Install the IPA server
 sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns --no-forwarders
 
-# Add forwarder to be double sure
-
-# TODO: is this necessary?
-#if [[ cat /etc/resolv.conf | grep $FORWARDER == '' ]]
-#then
-#  echo "nameserver $FORWARDER" | sudo tee -a /etc/resolv.conf
-#fi
+# Add localhost as a name server and disable rewrites
+sudo sed -i "1inameserver 127.0.0.1" /etc/resolv.conf
+sudo chattr +i /etc/resolv.conf

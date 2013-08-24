@@ -189,7 +189,7 @@ class VM():
 
         if trust:
             hostname += '.dom{ip_id}.tbad'.format(
-                ip_id=normalize_ip_suffix(last_ip_segment))
+                ip_id=util.normalize_ip_suffix(last_ip_segment))
 
         hostname += '.' + self.domain
 
