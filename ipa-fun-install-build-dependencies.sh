@@ -16,5 +16,5 @@ source $DIR/config.sh
 set -e
 
 pushd $IPA_DIR
-sudo yum install rpm-build `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"` -y --enablerepo=updates-testing
+sudo yum install -y rpm-build `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"`
 popd
