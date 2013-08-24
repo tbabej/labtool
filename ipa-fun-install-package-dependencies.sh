@@ -17,4 +17,4 @@ PACKAGES="freeipa-server freeipa-server-trust-ad freeipa-tests freeipa-admintool
 PACKAGES_GREP="freeipa-server|freeipa-server-trust-ad|freeipa-tests|freeipa-admintools|freeipa-client|freeipa-python"
 
 # Installs only the dependencies for the FreeIPA packages
-yum deplist $PACKAGES | grep provider | awk '{print $2}' | sort | uniq | grep -v $PACKAGES_GREP | sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
+yum deplist $PACKAGES | grep provider | awk '{print $2}' | sort | uniq | grep -v -E "($PACKAGES_GREP)" | sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
