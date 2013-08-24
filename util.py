@@ -18,9 +18,15 @@ def require_root():
 def normalize_hostname(ip):
     last_ip_segment = ip.split('.')[-1]
 
+    return 'vm-%s' % normalize_ip_suffix(last_ip_segment)
+
+
+def normalize_ip_suffix(last_ip_segment):
+
     if len(last_ip_segment) == 1:
-        return 'vm-00%s' % last_ip_segment
+        return '00%s' % last_ip_segment
     elif len(last_ip_segment) == 2:
-        return 'vm-0%s' % last_ip_segment
+        return '0%s' % last_ip_segment
     else:
-        return 'vm-%s' % last_ip_segment
+        return '%s' % last_ip_segment
+
