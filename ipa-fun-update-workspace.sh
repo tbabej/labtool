@@ -23,8 +23,8 @@ git pull
 popd
 
 # Install build and package dependencies
-./ipa-fun-install-build-dependnecies.sh
-./ipa-fun-install-package-dependnecies.sh
+$DIR/ipa-fun-install-build-dependencies.sh
+$DIR/ipa-fun-install-package-dependencies.sh
 
 sudo yum update -y
 
