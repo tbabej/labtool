@@ -289,18 +289,14 @@ class LibVirt(VirtBackend):
     def get_ip(self, name):
         domain = self.get_domain(name)
         desc = etree.fromstring(domain.XMLDesc(0))
-        macAddr = desc.find("devices/interface[@type='network']/mac")\
+        mac = desc.find("devices/interface[@type='network']/mac")\
                       .attrib["address"].lower().strip()
 
-        output, errors, rc = util.run(['arp', '-n'])
+        # Macs are tied to the IPs
+        last_mac_segment = mac.split(':')[-1]
+        ip = locals.IP_BASE + '%s' % int(last_mac_segment)
 
-        if rc == 0:
-            lines = [line.split() for line in output.split("\n")[1:]]
-            matching = [line[0] for line in lines
-                                if line and line[2] == macAddr]
-
-            if matching:
-                return matching[0]
+        return ip
 
     def start(self, name):
         if self.get_domain(name) and not self.get_domain(name).isActive():
@@ -352,6 +348,7 @@ class LibVirt(VirtBackend):
             # TODO: check that it started, if not, wait
             show('Starting..')
             self.start(name)
+            sleep(10)
 
             # Macs are tied to the IPs
             last_mac_segment = new_mac.split(':')[-1]
