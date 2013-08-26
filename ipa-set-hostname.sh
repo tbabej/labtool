@@ -24,9 +24,12 @@ HOSTNAME=$1
 HOSTNAME_SHORT=`echo $1 | cut -d. -f1`
 
 # Remove IPv6 if we are going for trusts
-if [[ `echo $HOSTNAME | grep tbad` == '' ]]
+if [[ `echo $HOSTNAME | grep tbad` == '' && $IP6 != "" ]]
 then
+  set +e
+  # This command can fail
   sudo ip -6 addr del $IP6 dev eth0
+  set -e
 fi
 
 sudo hostname $HOSTNAME
