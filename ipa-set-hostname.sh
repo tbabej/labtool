@@ -32,7 +32,23 @@ then
   set -e
 fi
 
-sudo hostname $HOSTNAME
-echo "$HOSTNAME" | sudo tee /etc/hostname
-echo "HOSTNAME=$HOSTNAME" | sudo tee -a /etc/sysconfig/network
-echo "$IP $HOSTNAME $HOSTNAME_SHORT" | sudo tee -a /etc/hosts
+if [[ $HOSTNAME != '' ]]
+then
+  sudo hostname $HOSTNAME
+  sudo sed -i '/HOSTNAME=/d' /etc/hostname
+  echo "$HOSTNAME" | sudo tee /etc/hostname
+  echo "HOSTNAME=$HOSTNAME" | sudo tee -a /etc/sysconfig/network
+else
+  echo "No hostname determined!"
+  exit 1
+fi
+
+
+if [[ $IP != '' ]]
+then
+  sudo sed -i '/$IP/d' /etc/hosts
+  echo "$IP $HOSTNAME $HOSTNAME_SHORT" | sudo tee -a /etc/hosts
+else
+  echo "No IP determined!"
+  exit 1
+fi
