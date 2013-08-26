@@ -360,6 +360,13 @@ class LibVirt(VirtBackend):
             return VM(name=name, backend=self, hostname=hostname,
                       domain=locals.DOMAIN, ip=ip)
 
+    def create_record(self, hostname, ip):
+        show('Creating record in /etc/hosts')
+        util.run(['sudo', 'sed', '-i', '/%s/d' % ip, '/etc/hosts'])
+        with open('/etc/hosts', 'a') as f:
+            f.write('{ip} {name}'.format(ip=ip, name=hostname))
+        util.run(['sudo', 'systemctl', 'restart', 'libvirtd'])
+
     def load_vm(self, name):
 
         show('Loading VM %s' % name)

@@ -200,6 +200,9 @@ class VM():
                  " {hostname} {log}".format(hostname=hostname,
                                             **self.locals))
 
+        show('Creating DNS record for the VM')
+        self.backend.create_record(hostname=self.hostname, ip=self.ip)
+
     def prepare_install(self, firewall, selinux, trust, subdomain=''):
 
         # Set firewall
