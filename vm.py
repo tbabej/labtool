@@ -247,7 +247,7 @@ class VM():
 
         show('Running whole test suite')
         ret = self.cmd("bash labtool/ipa-fun-run-tests.sh"
-                       " {dest} {log}".format(**self.locals),
+                       " {log}".format(**self.locals),
            allow_failure=True)
 
         if ret == 0:
