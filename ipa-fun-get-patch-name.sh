@@ -9,7 +9,8 @@ then
   echo "Usage: $0 patch_number"
   exit 1
 else
-  MATCHES=`find $PATCH_DIR -name \*$1\* | wc -l`
+  # Ignore vim .swp files
+  MATCHES=`find $PATCH_DIR -name \*$1\* | grep -v '.swp' |  wc -l`
   if [[ ! $MATCHES == 1 ]]
   then
     echo "There is unappropriate number($MATCHES) of patches matching $1 in $PATCH_DIR"
