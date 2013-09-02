@@ -305,6 +305,7 @@ class LibVirt(VirtBackend):
             output, errors, rc = util.run(['virsh',
                                            'start',
                                            name,
+                                           '--force-boot'
                                          ])
 
             #FIXME: this requires tweaking
