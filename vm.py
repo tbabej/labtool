@@ -167,8 +167,7 @@ class VM():
                  " {log}".format(**self.locals))
 
     def apply_build_workarounds(self):
-        self.cmd("sudo yum downgrade -y pylint"
-                 " {log}".format(**self.locals))
+        pass
 
     def install_packages(self, action):
         if action[1] == 'local':
