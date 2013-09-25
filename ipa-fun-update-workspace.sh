@@ -15,6 +15,7 @@ source $DIR/config.sh
 
 # Download the updates for both the FreeIPA and LabTool
 pushd $IPA_DIR
+git reset --hard origin/master
 git pull
 popd
 
