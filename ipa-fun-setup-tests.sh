@@ -17,11 +17,14 @@ fi
 sudo sed -ri 's/KrbMethodK5Passwd off/KrbMethodK5Passwd on/' /etc/httpd/conf.d/ipa.conf
 
 sudo rm -rf /home/$USER/.ipa/alias
-sudo mkdir -p /home/$USER/.ipa/alias
+mkdir -p /home/$USER/.ipa/alias
 
 sudo echo $PASSWORD > /home/$USER/.ipa/.dmpw
 sudo cp /etc/httpd/alias/*.db /home/$USER/.ipa/alias/
 sudo cp /etc/httpd/alias/pwdfile.txt /home/$USER/.ipa/alias/.pwd
+
+sudo chown -R $USER /home/$USER/.ipa
+sudo chgrp -R $USER /home/$USER/.ipa
 
 sudo cat > /home/$USER/.ipa/default.conf <<EOF
 [global]
