@@ -68,7 +68,7 @@ class VM():
         return self.client
 
     def cmd(self, command, allow_failure=False, silent=False):
-        i, o, e = self.client.exec_command(command)
+        i, o, e = self.client.exec_command('set -o pipefail; ' + command)
 
         def print_out(line):
             if silent:
