@@ -13,6 +13,11 @@ then
   NETBIOS=DOM`echo $1 | cut -d- -f2`
 fi
 
+# Fix the time issues
+sudo systemctl stop ntpd
+sudo systemctl disable ntpd
+sudo ntpdate advm.$AD_DOMAIN
+
 # Obtain admin credentials
 echo $PASSWORD | kinit admin
 
