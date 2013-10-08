@@ -37,7 +37,9 @@ sudo chown -R $USER .
 sudo rm -rf dist/*
 
 # Build ALL the rpms
-make -s all rpms 2>&1
+# Use twice the number of cores for jobs
+NUM_JOBS=$((`nproc` * 2))
+make -j $NUM_JOBS -s all rpms 2>&1
 
 # Copy the result into DIST_DIR
 cp dist/rpms/freeipa* $DIST_DIR/
