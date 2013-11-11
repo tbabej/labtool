@@ -30,7 +30,7 @@ class VM():
         show.debug("Domain: %s" % self.domain)
         show.debug("IP: %s" % self.ip)
 
-    def set_sudoers():
+    def set_sudoers(self):
         show('Configuring sudo commands execution in sudoers')
         show('Using root login')
         self.connect(user='root')

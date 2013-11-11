@@ -42,6 +42,57 @@ class RHEVM(VirtBackend):
                        password=self.password,
                        ca_file=self.ca_file)
 
+    def get_snapshot(self, name, snapshot_name):
+        candidates = [snap for snap in self.api.vms.get(name).snapshots.list()
+                      if snap.get_description() == snapshot_name]
+
+        if len(candidates) == 1:
+            return candidates[0]
+        else:
+            return None
+
+    def make_snapshot(self, name):
+        show("Deleting all previous snapshots")
+        show.tab()
+
+        for snap in self.api.vms.get(name).snapshots.list():
+            if snap.get_description != 'Active VM':
+                show("Deleting snapshot: %s" % snap.get_description())
+                snap.delete()
+
+        while len(self.api.vms.get(name).snapshots.list()) > 1:
+            show("Waiting for the deletion to complete.")
+            sleep(5)
+
+        show.untab()
+
+        try:
+            snapshot = params.Snapshot(description=locals.SNAPSHOT_NAME,
+                                       vm=self.api.vms.get(name))
+            self.api.vms.get(name).snapshots.add(snapshot)
+            show("Creating a Snapshot")
+            show('Waiting for Snapshot creation to finish')
+            while self.api.vms.get(name).status.state == 'image_locked':
+                sleep(5)
+        except Exception as e:
+            show('Failed to Create a Snapshot:\n%s' % str(e))
+
+        if self.get_snapshot(locals.SNAPSHOT_NAME):
+            show("Snapshot created: %s" % locals.SNAPSHOT_NAME)
+
+        show.untab()
+
+    def revert_to_snapshot(self, name):
+        show.tab()
+
+        self.stop(name)
+
+        show('Restoring the snapshot: %s' % locals.SNAPSHOT_NAME)
+        snapshot = self.get_snapshot(locals.SNAPSHOT_NAME)
+        snapshot.restore()
+
+        return self.load_vm(name)
+
     def check_arguments(self, name, template, connect):
 
         if connect:
@@ -56,10 +107,6 @@ class RHEVM(VirtBackend):
             show('Checking whether given VM name is not used')
             if self.api.vms.get(name) is not None:
                 raise ValueError('Given VM name %s is already used' % name)
-
-    def make_snapshot(self, name):
-        show('Creating new snapshot')
-        pass
 
     def create_vm(self, name, memory=locals.MEMORY,
                   template=locals.TEMPLATE_NAME):
@@ -94,6 +141,9 @@ class RHEVM(VirtBackend):
         vm.permissions.add(admin_vm_manager_perm)
         show('Permissions for admin to see VM set')
 
+        return self.load_vm(name)
+
+    def load_vm(self, name):
         # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
         while self.api.vms.get(name).status.state != 'down':
@@ -101,7 +151,7 @@ class RHEVM(VirtBackend):
 
         if self.api.vms.get(name).status.state != 'up':
             show('Starting VM')
-            vm.start()
+            self.api.vms.get(name).start()
             while self.api.vms.get(name).status.state != 'up':
                 sleep(1)
 
@@ -179,6 +229,15 @@ class RHEVM(VirtBackend):
         if self.api.vms.get(name).get_guest_info():
             return self.api.vms.get(name).get_guest_info()\
                        .get_ips().get_ip()[0].get_address()
+
+    def stop(self, name):
+        self.api.get(name).stop()
+
+        show('Waiting for VM %s to reach Down status' % name)
+        while self.api.vms.get(name).status.state != 'down':
+            sleep(1)
+
+        show('VM %s stopped successfully' % name)
 
     def remove_vm(self, name):
         show('Removing the VM:')
@@ -308,7 +367,6 @@ class LibVirt(VirtBackend):
                                            '--force-boot'
                                          ])
 
-            #FIXME: this requires tweaking
             sleep(20)
 
             if rc != 0:

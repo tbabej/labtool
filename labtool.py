@@ -1,8 +1,6 @@
 #! /usr/bin/python
 
-import sys
-
-from printer import show, notify
+from printer import show
 from parser import parse_options
 from vm import VM
 
