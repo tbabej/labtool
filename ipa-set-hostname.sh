@@ -35,8 +35,9 @@ fi
 if [[ $HOSTNAME != '' ]]
 then
   sudo hostname $HOSTNAME
-  sudo sed -i '/HOSTNAME=/d' /etc/hostname
   echo "$HOSTNAME" | sudo tee /etc/hostname
+  sudo touch /etc/sysconfig/network
+  sudo sed -i '/HOSTNAME=/d' /etc/sysconfig/network
   echo "HOSTNAME=$HOSTNAME" | sudo tee -a /etc/sysconfig/network
 else
   echo "No hostname determined!"
