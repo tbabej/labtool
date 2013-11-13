@@ -45,4 +45,32 @@ def notify(body, headline='Labtool Ready!', app_name='LabTool', app_icon='',
         print body
 
 
+def monitor(hostname, domain):
+    try:
+        bus_name = 'org.kde.konsole'
+        object_path = '/Konsole'
+        interface_name = 'org.kde.konsole.Window'
+
+        session_bus = dbus.SessionBus()
+        obj = session_bus.get_object(bus_name, object_path)
+        interface = dbus.Interface(obj, interface_name)
+
+        session = interface.newSession()
+
+        object_path = '/Sessions/%s' % session
+        interface_name = 'org.kde.konsole.Session'
+
+        session_bus = dbus.SessionBus()
+        obj = session_bus.get_object(bus_name, object_path)
+        interface = dbus.Interface(obj, interface_name)
+
+        logfile = getattr(locals, 'LOG_FILE', None) or '/vmlog'
+        user = getattr(locals, 'USER', None)
+
+        interface.sendText("ssh -n %s@%s.%s 'sudo tail -f %s'" %
+                           (user, hostname, domain, logfile))
+        interface.sendText("\n")
+    except:
+        pass
+
 show = Printer()
