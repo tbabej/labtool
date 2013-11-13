@@ -38,6 +38,9 @@ class VM():
                  '/# Defaults    requiretty/g" /etc/sudoers')
         self.close()
 
+    def start(self):
+        self.backend.start(self.name)
+
     def connect(self, user=locals.USER):
         # show('Connecting to %s' % self.fqdn)
         success = False

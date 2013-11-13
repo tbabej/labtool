@@ -1,6 +1,9 @@
 #! /usr/bin/python
 
-from printer import show
+import sys
+import time
+
+from printer import show, notify, monitor
 from parser import parse_options
 from vm import VM
 
@@ -44,7 +47,9 @@ def main(args):
     #    locals.DOMAIN = 'ipa.com'
     #else:
 
-    if backend.exists(args.name):
+    if args.connect:
+        vm = backend.load_vm(args.name)
+    elif backend.exists(args.name):
         show('VM exists, reverting back to snapshot')
         backend.revert_to_snapshot(args.name)
         vm = backend.load_vm(args.name)
@@ -54,6 +59,8 @@ def main(args):
 
     vm.connect()
     vm.setup_logging_path()
+
+    monitor(vm.hostname, vm.domain)
 
     if args.workspace:
         vm.create_workspace()
@@ -69,6 +76,16 @@ def main(args):
     if args.build:
         vm.build(args.build)
         backend.make_snapshot(args.name)
+
+        while True:
+            try:
+                vm.start()
+                break
+            except Exception, e:
+                show("Skipping error %s" % str(e))
+                time.sleep(5)
+                pass
+        vm.connect()
 
     # Setup a new hostname
     vm.set_hostname(trust=args.trust)
@@ -191,16 +208,16 @@ def main(args):
 if __name__ == '__main__':
     args = parse_options()
 
-    #try:
-    main(args)
-#    except Exception, e:
-        #print '***The command above has FAILED***'
-        #print 'You can find the logs in ~/<hostname>.log on the VM'
-        #print ''
-        #print str(e)
+    try:
+        main(args)
+    except Exception, e:
+        print '***The command above has FAILED***'
+        print 'You can find the logs in ~/<hostname>.log on the VM'
+        print ''
+        print str(e)
 
-        #notify('Scripts on %s failed?!' % args.name)
+        notify('Scripts on %s failed?!' % args.name)
 
-#        sys.exit(1)
+        sys.exit(1)
 
- #   notify('Scripts on %s finished :-)' % args.name)
+    notify('Scripts on %s finished :-)' % args.name)
