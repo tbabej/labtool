@@ -13,6 +13,9 @@ then
   NETBIOS=DOM`echo $1 | cut -d- -f2`
 fi
 
+# Obtain admin credentials
+echo $PASSWORD | kinit admin
+
 # Configure DNS only if on master
 if [[ $1 == '' ]]
 then
@@ -23,9 +26,6 @@ fi
 sudo systemctl stop ntpd
 sudo systemctl disable ntpd
 sudo ntpdate advm.$AD_DOMAIN
-
-# Obtain admin credentials
-echo $PASSWORD | kinit admin
 
 # Install support for trusts
 sudo ipa-adtrust-install --netbios-name=$NETBIOS -a $PASSWORD --add-sids -U
