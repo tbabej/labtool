@@ -36,7 +36,7 @@ pushd $WORKING_DIR
 rm -rf freeipa
 
 # Clone FreeIPA so we have our own sandbox to play in
-git clone $GIT_PATH
+git clone "$GIT_PATH" "$IPA_DIR"
 
 # If the cloning fails for whatever reason, fall back to the backup
 if [[ $? != 0 ]]
