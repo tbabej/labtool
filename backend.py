@@ -95,6 +95,10 @@ class RHEVM(VirtBackend):
 
         show('Restoring the snapshot: %s' % locals.SNAPSHOT_NAME)
         snapshot = self.get_snapshot(name, locals.SNAPSHOT_NAME)
+        if not snapshot:
+            raise ValueError("Snapshot %s does not exist"
+                             % locals.SNAPSHOT_NAME)
+
         snapshot.restore()
 
         # VM automatically shuts down after creation
