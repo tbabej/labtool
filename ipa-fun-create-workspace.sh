@@ -46,8 +46,8 @@ then
 fi
 
 # Install build and package dependencies
-./ipa-fun-install-build-dependnecies.sh
-./ipa-fun-install-package-dependnecies.sh
+$DIR/ipa-fun-install-build-dependnecies.sh
+$DIR/ipa-fun-install-package-dependnecies.sh
 
 # TODO: configure for the local repos
 
