@@ -65,7 +65,10 @@ def main(args):
     if args.workspace:
         vm.create_workspace()
     else:
-        vm.update_workspace()
+        if vm.detect_workspace():
+            vm.update_workspace()
+        else:
+            vm.create_workspace()
 
     # Install selected packages from ipa-devel repo
     if args.ipadevel:

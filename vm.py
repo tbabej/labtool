@@ -154,9 +154,13 @@ class VM():
 
     def create_workspace(self):
         show('Creating workspace. You should really do this in the template!')
-        self.cmd("echo test")
         self.cmd("bash labtool/ipa-fun-create-workspace.sh"
                  " {log}".format(**self.locals))
+
+    def detect_workspace(self):
+        # Detect workspace returns 0 if the workspace was detected, and 1 otherwise 
+        return not self.cmd("bash labtool/ipa-fun-detect-workspace.sh"
+                            " {log}".format(**self.locals), allow_failure=True)
 
     def install_devel_packages(self, packages=[]):
         if packages:
