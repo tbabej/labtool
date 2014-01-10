@@ -47,7 +47,7 @@ def main(args):
     #    locals.DOMAIN = 'ipa.com'
     #else:
 
-    if backend.exists(args.name):
+    if backend.exists(args.name) and not args.connect:
         show('VM exists, reverting back to snapshot')
         try:
             backend.revert_to_snapshot(args.name)
@@ -60,6 +60,10 @@ def main(args):
                                 'to remove whole VM')
 
     if not backend.exists(args.name):
+        if args.connect:
+            raise Exception("You requested --connect but specified VM does not "
+                            "exist, exiting.")
+
         vm = backend.create_vm(args.name,
                                template=args.template or locals.TEMPLATE_NAME)
     else:
