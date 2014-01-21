@@ -40,7 +40,7 @@ EOF
 
 sudo service httpd restart
 
-sudo echo "blablabla" | kinit admin
+sudo echo "$PASSWORD" | kinit admin
 
 if [ -z "`rpm -qa | grep python-nose`" ]
 then

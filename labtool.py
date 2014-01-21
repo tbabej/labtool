@@ -47,15 +47,27 @@ def main(args):
     #    locals.DOMAIN = 'ipa.com'
     #else:
 
-    if args.connect:
-        vm = backend.load_vm(args.name)
-    elif backend.exists(args.name):
+    if backend.exists(args.name) and not args.connect:
         show('VM exists, reverting back to snapshot')
-        backend.revert_to_snapshot(args.name)
-        vm = backend.load_vm(args.name)
-    else:
+        try:
+            backend.revert_to_snapshot(args.name)
+        except ValueError as e:
+            if args.remove:
+                show(str(e) + ': removing the whole VM')
+                backend.remove_vm(args.name)
+            else:
+                raise Exception(str(e) + ': use --remove if you want '
+                                'to remove whole VM')
+
+    if not backend.exists(args.name):
+        if args.connect:
+            raise Exception("You requested --connect but specified VM does not "
+                            "exist, exiting.")
+
         vm = backend.create_vm(args.name,
                                template=args.template or locals.TEMPLATE_NAME)
+    else:
+        vm = backend.load_vm(args.name)
 
     vm.connect()
     vm.setup_logging_path()
