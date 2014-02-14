@@ -74,13 +74,22 @@ def main(args):
 
     monitor(vm.hostname, vm.domain)
 
-    if args.workspace:
+    if args.workspace or not vm.detect_workspace():
         vm.create_workspace()
-    else:
-        if vm.detect_workspace():
-            vm.update_workspace()
-        else:
-            vm.create_workspace()
+    vm.update_workspace()
+
+    backend.make_snapshot(args.name)
+    while True:
+        try:
+            vm.start()
+            break
+        except Exception, e:
+            # vm.start() can fail if disks are not in state 'down'
+            show("Skipping error %s" % str(e))
+            time.sleep(5)
+            pass
+
+    vm.connect()
 
     # Install selected packages from ipa-devel repo
     if args.ipadevel:
@@ -90,17 +99,6 @@ def main(args):
 
     if args.build:
         vm.build(args.build)
-        backend.make_snapshot(args.name)
-
-        while True:
-            try:
-                vm.start()
-                break
-            except Exception, e:
-                show("Skipping error %s" % str(e))
-                time.sleep(5)
-                pass
-        vm.connect()
 
     # Setup a new hostname
     vm.set_hostname(trust=args.trust)
