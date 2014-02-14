@@ -3,7 +3,7 @@
 ##############################################################################
 # Author: Tomas Babej <tbabej@redhat.com>
 #
-# Install the dependnecies for the FreeIPA packages. Use in templates to
+# Install the dependencies for the FreeIPA packages. Use in templates to
 # improve performance of the yum update.
 #
 # Usage: $0 <branch>
