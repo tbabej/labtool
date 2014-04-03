@@ -3,7 +3,7 @@
 ##############################################################################
 # Author: Tomas Babej <tbabej@redhat.com>
 #
-# Install the dependnecies for the FreeIPA packages. Use in templates to
+# Install the dependencies for the FreeIPA packages. Use in templates to
 # improve performance of the yum update.
 #
 # Usage: $0 <branch>
@@ -17,7 +17,16 @@ PACKAGES="freeipa-server freeipa-server-trust-ad freeipa-tests freeipa-admintool
 PACKAGES_GREP="freeipa-server|freeipa-server-trust-ad|freeipa-tests|freeipa-admintools|freeipa-client|freeipa-python"
 
 # Installs only the dependencies for the FreeIPA packages
-yum deplist $PACKAGES | grep provider | awk '{print $2}' | sort | uniq | grep -v -E "($PACKAGES_GREP)" | sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
+#select only providers (input: "dependency: sssd >= 1.11.1\n  provider: sssd.x86_64 1.11.3-1.fc20")
+yum deplist $PACKAGES | grep provider | \
+    # select only package name (input: "provider: sssd.x86_64 1.11.3-1.fc20")
+    awk '{print $2}' | \
+    # cut architecture from the end (input: "sssd.x86_64")
+    sed 's/\.[^.]*$//' | \
+    sort | uniq | \
+    # omit ipa packages
+    grep -v -E "($PACKAGES_GREP)" | \
+    sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
 
 # Install the non-direct dependencies
 sudo yum install bind-dyndb-ldap bash-completion -y
