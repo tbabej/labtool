@@ -138,7 +138,7 @@ def main(args):
             show.tab()
 
             hostname = backend.create_vm(replica_name, locals.MEMORY,
-                                         args.template, 'auto')
+                                         args.template)
 
             vm.prepare_replica(hostname)
 
