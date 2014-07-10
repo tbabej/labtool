@@ -29,4 +29,4 @@ yum deplist $PACKAGES | grep provider | \
     sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
 
 # Install the non-direct dependencies
-sudo yum install bind-dyndb-ldap bash-completion -y
+sudo yum install --enablerepo='*updates-testing' bind-dyndb-ldap bash-completion -y
