@@ -116,7 +116,7 @@ class RHEVM(VirtBackend):
                 raise ValueError('Given VM name %s does not exist' % name)
         else:
             show('Checking whether given template exists')
-            if self.api.templates.get(template) is None:
+            if util.get_latest_template(self.api, template) is None:
                 raise ValueError('Template %s does not exist' % template)
 
             show('Checking whether given VM name is not used')
@@ -134,7 +134,7 @@ class RHEVM(VirtBackend):
         pars = params.VM(name=name,
                          memory=memory,
                          cluster=self.api.clusters.get(self.cluster),
-                         template=self.api.templates.get(template))
+                         template=util.get_latest_template(self.api, template))
 
         # locals.HOST can be used to enforce usage of a particular host
         if locals.HOST is not None:
@@ -143,7 +143,7 @@ class RHEVM(VirtBackend):
                                          affinity='pinned'))
 
         # Check whether the template exist, if so, create the VM
-        if self.api.templates.get(template) is None:
+        if util.get_latest_template(self.api, template) is None:
             raise ValueError('Template does not exist.')
         vm = self.api.vms.add(pars)
         show('VM was created from Template successfully')
