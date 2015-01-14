@@ -11,4 +11,4 @@ sudo chattr -i /etc/resolv.conf
 sudo sed -i "1inameserver 127.0.0.1" /etc/resolv.conf
 
 # Install the IPA server
-sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns --no-forwarders
+sudo ipa-server-install -U -r $DOMAIN  -p $PASSWORD  -a $PASSWORD --setup-dns --forwarder $FORWARDER
