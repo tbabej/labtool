@@ -37,6 +37,7 @@ SERVER=`hostname`
 DOMAIN=`hostname | cut -d. -f2-`
 REALM=`echo $DOMAIN | tr '[:lower:]' '[:upper:]'`
 BASEDN=dc=${DOMAIN//./,dc=}
+DOMAIN_DASHED=${REALM//./-}
 FORWARDER=192.168.0.1  # Put your real forwarder IP here
 PASSWORD=blablabla
 

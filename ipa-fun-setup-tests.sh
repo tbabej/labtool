@@ -20,7 +20,9 @@ sudo rm -rf /home/$USER/.ipa/alias
 mkdir -p /home/$USER/.ipa/alias
 
 sudo echo $PASSWORD > /home/$USER/.ipa/.dmpw
-sudo cp /etc/httpd/alias/*.db /home/$USER/.ipa/alias/
+
+rm -rf /home/$USER/.ipa/alias
+sudo cp -r /etc/httpd/alias /home/$USER/.ipa/alias
 sudo cp /etc/httpd/alias/pwdfile.txt /home/$USER/.ipa/alias/.pwd
 
 sudo chown -R $USER /home/$USER/.ipa
@@ -35,16 +37,12 @@ server = $HOSTNAME
 xmlrpc_uri = https://$HOSTNAME/ipa/xml
 enable_ra = True
 wait_for_attr = True
-#in_tree=True
+wait_for_dns = 10
+ldap_uri=ldapi://%2fvar%2frun%2fslapd-${DOMAIN_DASHED}.socket
 EOF
 
 sudo service httpd restart
 
 sudo echo "$PASSWORD" | kinit admin
-
-if [ -z "`rpm -qa | grep python-nose`" ]
-then
-	sudo yum -y install python-nose
-fi
 
 sudo chown -R $USER:$USER /home/$USER/.ipa
