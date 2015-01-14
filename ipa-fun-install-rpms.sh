@@ -15,6 +15,6 @@ set -e
 
 
 pushd $DIST_DIR
-sudo yum localinstall freeipa-* -y
+sudo dnf install freeipa-* -y
 popd
 
