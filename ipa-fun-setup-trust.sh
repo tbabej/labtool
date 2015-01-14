@@ -19,7 +19,14 @@ echo $PASSWORD | kinit admin
 # Configure DNS only if on master
 if [[ $1 == '' ]]
 then
-  ipa dnszone-add $AD_DOMAIN --name-server=advm.$AD_DOMAIN --admin-email="hostmaster@$AD_DOMAIN.com" --force --forwarder=$AD_IP --forward-policy=only --ip-address=$AD_IP
+  # Check if it does not exist already, if not, configure
+  set +e
+  ipa dnsforwardzone-show $AD_DOMAIN
+  if [[ $? != 0 ]]
+  then
+    ipa dnsforwardzone-add $AD_DOMAIN --forwarder=$AD_IP --forward-policy=only
+  fi
+  set -e
 fi
 
 # Fix the time issues

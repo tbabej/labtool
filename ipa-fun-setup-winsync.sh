@@ -18,7 +18,14 @@ fi
 # Configure DNS only if on master
 if [[ $1 == '' ]]
 then
-  ipa dnszone-add $AD_DOMAIN --name-server=advm.$AD_DOMAIN --admin-email="hostmaster@$AD_DOMAIN.com" --force --forwarder=$AD_IP --forward-policy=only
+  # Check if it does not exist already, if not, configure
+  set +e
+  ipa dnsforwardzone-show $AD_DOMAIN
+  if [[ $? != 0 ]]
+  then
+    ipa dnsforwardzone-add $AD_DOMAIN --forwarder=$AD_IP --forward-policy=only
+  fi
+  set -e
 fi
 
 # Prepare the directory
@@ -29,13 +36,15 @@ sudo mkdir cacerts
 # Download the certificates
 cd cacerts
 sudo wget localhost/ipa/config/ca.crt
-sudo cp $AD_CERTIFICATE_PATH ./ad_cert.cer
+sudo cp $AD_CERTIFICATE_PATH ./ad_ca_cert.cer
 
 # Rehash the certificate
 sudo cacertdir_rehash /etc/openldap/cacerts/
 
 # Write down configuration
-echo "TLS_CACERTDIR /etc/openldap/cacerts/" | sudo tee -a /etc/openldap/ldap.conf
-echo "TLS_REQCERT allow" | sudo tee -a /etc/openldap/ldap.conf
+#echo "TLS_CACERTDIR /etc/openldap/cacerts/" | sudo tee -a /etc/openldap/ldap.conf
+#echo "TLS_REQCERT allow" | sudo tee -a /etc/openldap/ldap.conf
 
-sudo ipa-replica-manage connect --winsync --binddn cn=Administrator,cn=Users,$BASEDN --bindpw Secret123  --passsync Secret123 --cacert /etc/openldap/cacerts/ad_cert.cer advm.$AD_DOMAIN -v
+set -x
+
+sudo ipa-replica-manage connect -p $PASSWORD --winsync --binddn cn=Administrator,cn=Users,$AD_BASEDN --bindpw $AD_PASSWORD --passsync $AD_PASSWORD --cacert $AD_CERTIFICATE_PATH advm.$AD_DOMAIN -v -f
