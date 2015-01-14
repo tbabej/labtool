@@ -12,6 +12,7 @@ source $DIR/config.sh
 if [[ $1 == "" ]]
 then
   echo "Usage: $0 vm-xyz (first segment of replica's hostname)"
+  exit
 fi
 
 # $1 should be vm-xyz
