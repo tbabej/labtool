@@ -17,5 +17,4 @@ fi
 pushd $IPA_DIR
 
 # Run the tests
-./make-test
-
+ipa-run-tests -k 'not test_integration'
