@@ -23,6 +23,8 @@ then
   exit 1
 fi
 
+bash $DIR/ipa-fun-enable-repos.sh
+
 pushd $IPA_DIR
 
 # Checkout to the given branch
