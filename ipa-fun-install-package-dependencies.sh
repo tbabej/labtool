@@ -4,7 +4,7 @@
 # Author: Tomas Babej <tbabej@redhat.com>
 #
 # Install the dependencies for the FreeIPA packages. Use in templates to
-# improve performance of the yum update.
+# improve performance of the dnf update.
 #
 # Usage: $0 <branch>
 # Returns: 0 on success, 1 on failure
@@ -18,7 +18,7 @@ PACKAGES_GREP="freeipa-server|freeipa-server-trust-ad|freeipa-tests|freeipa-admi
 
 # Installs only the dependencies for the FreeIPA packages
 #select only providers (input: "dependency: sssd >= 1.11.1\n  provider: sssd.x86_64 1.11.3-1.fc20")
-yum deplist $PACKAGES | grep provider | \
+dnf deplist $PACKAGES | grep provider | \
     # select only package name (input: "provider: sssd.x86_64 1.11.3-1.fc20")
     awk '{print $2}' | \
     # cut architecture from the end (input: "sssd.x86_64")
@@ -26,7 +26,7 @@ yum deplist $PACKAGES | grep provider | \
     sort | uniq | \
     # omit ipa packages
     grep -v -E "($PACKAGES_GREP)" | \
-    sed ':a;N;$!ba;s/\n/ /g' | xargs sudo yum -y install
+    sed ':a;N;$!ba;s/\n/ /g' | xargs sudo dnf -y install
 
 # Install the non-direct dependencies
-sudo yum install --enablerepo='*updates-testing' bind-dyndb-ldap bash-completion -y
+sudo dnf install --enablerepo='*updates-testing' bind-dyndb-ldap bash-completion -y

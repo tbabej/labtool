@@ -166,7 +166,7 @@ class VM():
         if packages:
             show('Installing packages from devel repo: {pckgs}'
                  .format(pckgs=', '.join(packages)))
-            self.cmd('sudo yum install -y --enablerepo=ipa-devel {pckgs}'
+            self.cmd('sudo dnf install -y --enablerepo=ipa-devel {pckgs}'
                      .format(pckgs=' '.join(packages)))
 
     def install_build_dependencies(self):

@@ -26,5 +26,5 @@ then
   sudo rm -rf /etc/sysconfig/pki/tomcat/pki-tomcat
   sudo rm -rf /var/lib/pki/pki-tomcat
   sudo rm -rf /etc/pki/pki-tomcat
-  sudo yum remove freeipa-* -y
+  sudo dnf remove freeipa-* -y
 fi

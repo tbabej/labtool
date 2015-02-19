@@ -18,10 +18,10 @@ set -e
 # TODO: global option for using the updates-testing repository in installs?
 if [[ $PLATFORM_NAME == "Fedora" ]]
 then
-  sudo yum install freeipa-server freeipa-client freeipa-server-trust-ad -y
+  sudo dnf install freeipa-server freeipa-client freeipa-server-trust-ad -y
 elif [[ $PLATFORM_NAME == "RHEL" ]]
 then
-  sudo yum install ipa-server ipa-client freeipa-server-trust-ad -y
+  sudo dnf install ipa-server ipa-client freeipa-server-trust-ad -y
 else
   echo 'Unknown platform : $PLATFORM'
 fi

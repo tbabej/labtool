@@ -29,5 +29,5 @@ popd
 $DIR/ipa-fun-install-build-dependencies.sh
 $DIR/ipa-fun-install-package-dependencies.sh
 
-sudo yum update -y
+sudo dnf update -y
 
