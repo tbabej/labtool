@@ -46,4 +46,4 @@ fi
 echo $PASSWORD | kinit admin
 
 # Add the trust
-echo $AD_PASSWORD | ipa trust-add --type=ad $AD_DOMAIN --admin Administrator --password
+echo $AD_PASSWORD | ipa trust-add --type=ad $AD_DOMAIN --range-type ipa-ad-trust --admin Administrator --password

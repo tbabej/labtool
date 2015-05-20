@@ -9,11 +9,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/config.sh
 
 # Check is hostname was properly set up during IPA installation
-if [[ `hostname | grep tbad` == '' ]]
-then
-  echo "The hostname is not properly set for auto winsync."
-  exit 1
-fi
+#if [[ `hostname | grep tbad` == '' ]]
+#then
+#  echo "The hostname is not properly set for auto winsync."
+#  exit 1
+#fi
 
 # Configure DNS only if on master
 if [[ $1 == '' ]]

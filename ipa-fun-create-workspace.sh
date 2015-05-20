@@ -22,6 +22,7 @@ function recreate_dir(){
 }
 
 GIT_PATH=git://git.fedorahosted.org/git/freeipa.git
+#GIT_PATH=https://github.com/tbabej/freeipa.git
 GIT_PATH_BACKUP=https://github.com/encukou/freeipa.git
 
 # Create working dir directory structure

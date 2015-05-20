@@ -29,5 +29,5 @@ popd
 $DIR/ipa-fun-install-build-dependencies.sh
 $DIR/ipa-fun-install-package-dependencies.sh
 
-sudo dnf update -y
+sudo $DNF update -y
 

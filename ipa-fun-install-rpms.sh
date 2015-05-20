@@ -15,6 +15,6 @@ set -e
 
 
 pushd $DIST_DIR
-sudo dnf install freeipa-* -y
+sudo $DNF install freeipa-* -y
 popd
 
