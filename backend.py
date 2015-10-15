@@ -136,6 +136,8 @@ class RHEVM(VirtBackend):
                          cluster=self.api.clusters.get(self.cluster),
                          template=util.get_latest_template(self.api, template))
 
+        show('Template: %s' % template)
+
         # locals.HOST can be used to enforce usage of a particular host
         if locals.HOST is not None:
             pars.set_placement_policy(params.VmPlacementPolicy(
@@ -144,7 +146,7 @@ class RHEVM(VirtBackend):
 
         # Check whether the template exist, if so, create the VM
         if util.get_latest_template(self.api, template) is None:
-            raise ValueError('Template does not exist.')
+            raise ValueError('Template does not exist: %s' % template)
         vm = self.api.vms.add(pars)
         show('VM was created from Template successfully')
 
