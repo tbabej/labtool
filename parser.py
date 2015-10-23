@@ -105,7 +105,7 @@ def parse_options():
                         metavar=('WHAT', 'WHICH'),
                         help='Build the rpms from selected source (master, '
                              'selected branch, or master with selected patch '
-                             'on top). For origin/master use: --build origin '
+                             'on top). For origin/master use: --build branch '
                              'master. For branch use: --build branch '
                              'BRANCHNAME. For patch use: --build patch '
                              'PATCHNUMBER [PATCHNUMBER..]')
