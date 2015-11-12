@@ -15,6 +15,9 @@ source $DIR/config.sh
 set -e
 
 pushd $IPA_DIR
-sudo $DNF install -y rpm-build `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"`
-echo `grep "^BuildRequires" freeipa.spec.in | awk '{ print $2 }' | grep -v "^/"`
+# DNF refuses to process SPEC files whose names do not end with .spec
+SPEC=$(mktemp --suffix=.spec)
+cp freeipa.spec.in "$SPEC"
+sudo $DNF builddep -y "$SPEC"
+rm "$SPEC"
 popd
