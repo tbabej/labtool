@@ -1,4 +1,7 @@
 # ========= User-defined parameters =========
+# Uncomment this to get debugging output from all labtool scripts
+#set -o xtrace
+
 
 # It is recommended that all dirs are subdirectories
 # of the WORKING_DIR. The scripts may often rely on
