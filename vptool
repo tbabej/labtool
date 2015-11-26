@@ -88,7 +88,8 @@ class App:
         return
 
     def remove(self):
-        self.backend.remove_vm(self.args.name)
+        for name in self.args.name:
+            self.backend.remove_vm(name)
 
     def reboot(self):
         self.backend.reboot(self.args.name)
@@ -165,7 +166,7 @@ def parse_args():
 
     # "remove" command
     parser_b = subparsers.add_parser('remove', help='remove vm')
-    parser_b.add_argument('name', help='vm name')
+    parser_b.add_argument('name', help='vm name', nargs='+')
 
     # "reboot" command
     parser_b = subparsers.add_parser('reboot', help='reboot vm')
