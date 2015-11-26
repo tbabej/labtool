@@ -77,14 +77,21 @@ class App:
 
     def create(self):
         template = self.args.template
-        name = self.args.name
+        names = self.args.name
 
-        if not name.startswith(locals.USER):
-            raise OperationError("Incorrect vm prefix. Must start with: %s" % locals.USER)
+        for name in names:
+            if not name.startswith(locals.USER):
+                raise OperationError(
+                    "%s: incorrect vm prefix. Must start with: %s" %
+                        (name, locals.USER)
+                )
+
 
         if not template:
             template = locals.TEMPLATE_NAME
-        self.backend.create_vm(name, template=template)
+
+        for name in names:
+            self.backend.create_vm(name, template=template)
         return
 
     def remove(self):
@@ -161,8 +168,8 @@ def parse_args():
 
     # "create" command
     parser_b = subparsers.add_parser('create', help='create new vm')
-    parser_b.add_argument('name', help='vm name')
-    parser_b.add_argument('template', nargs='?', help='template name')
+    parser_b.add_argument('name', help='vm name', nargs='+')
+    parser_b.add_argument('-t', '--template', dest='template', help='template name')
 
     # "remove" command
     parser_b = subparsers.add_parser('remove', help='remove vm')
