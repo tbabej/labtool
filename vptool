@@ -1,0 +1,243 @@
+#! /usr/bin/python
+
+import argparse
+import os
+import sys
+import time
+from printer import show
+#import subprocess
+from vm import VM
+
+# Import sensitive settings
+import locals
+import util
+import inspect
+import backend as backends
+
+def inspect_obj(obj, value=False):
+    for name, data in inspect.getmembers(obj):
+        if value:
+            print '%s :' % name, repr(data)
+        else:
+            print '%s' % name
+
+class OperationError(BaseException):
+    foo = ''
+
+
+class App:
+
+    def __init__(self, args):
+        self.verbose = False
+        self.connected = False
+        self.args = args
+
+    def connect(self):
+        BackendClass = getattr(backends, locals.BACKEND)
+        if self.connected:
+            if self.verbose:
+                show('Already connected to %s lab' % locals.BACKEND)
+            return
+        if self.verbose:
+            show('Estabilishing connection to %s lab' % locals.BACKEND)
+        self.backend = BackendClass(url=locals.URL,
+                               username=locals.USERNAME,
+                               password=locals.PASSWORD,
+                               cluster_name=locals.CLUSTER_NAME,
+                               ca_file=locals.CA_FILE)
+        self.connected = True
+
+    def template_list(self):
+        tmpl_list = self.backend.api.templates.list()
+        return [t.get_name() for t in tmpl_list]
+
+    def disconnect(self):
+        if self.connected:
+            self.backend.api.disconnect()
+        self.connected = False
+
+    def list(self):
+        query = locals.USER
+        if args.all:
+            query = ''
+        elif args.query:
+            query = args.query
+        vms = self.backend.api.vms.list(query=query)
+        status= ""
+        for vm in vms:
+            name = vm.get_name()
+            ip = ''
+            gi = vm.get_guest_info()
+            if gi:
+                ip = gi.get_ips().get_ip()[0].get_address()
+            status = vm.get_status()
+            print("{: >20} {: >20} {: >20}".format(name, ip, status.state))
+
+        return
+
+    def info(self):
+        vm = self.backend.api.vms.get(self.args.name)
+        gi = vm.get_guest_info()
+        if not gi:
+            return
+
+        ip = gi.get_ips().get_ip()[0].get_address()
+
+        if self.args.ip:
+            print ip
+            return
+
+        if self.args.host:
+            print gi.fqdn
+            return
+
+        print ip
+        print gi.fqdn
+
+    def create(self):
+        template = self.args.template
+        names = self.args.name
+
+        for name in names:
+            if not name.startswith(locals.USER):
+                raise OperationError(
+                    "%s: incorrect vm prefix. Must start with: %s" %
+                        (name, locals.USER)
+                )
+
+
+        if not template:
+            template = locals.TEMPLATE_NAME
+
+        for name in names:
+            self.backend.create_vm(name, template=template)
+        return
+
+    def remove(self):
+        for name in self.args.name:
+            self.backend.remove_vm(name)
+
+    def reboot(self):
+        self.backend.reboot(self.args.name)
+
+    def stop(self):
+        self.backend.stop(self.args.name)
+
+    def shutdown(self):
+        self.backend.shutdown(self.args.name)
+
+    def start(self):
+        self.backend.start(self.args.name)
+
+    def templates(self):
+        tmpl_list = self.template_list()
+        for template in tmpl_list:
+            print template
+        return
+
+    def run(self):
+        locals.set_locale(locals.DEFAULT_LOCATION)
+        if self.args.action == 'list':
+            self.connect()
+            self.list()
+            self.disconnect()
+        elif self.args.action == 'info':
+            self.connect()
+            self.info()
+            self.disconnect()
+        elif self.args.action == 'create':
+            self.connect()
+            self.create()
+            self.disconnect()
+        elif self.args.action == 'remove':
+            self.connect()
+            self.remove()
+            self.disconnect()
+        elif self.args.action == 'reboot':
+            self.connect()
+            self.reboot()
+            self.disconnect()
+        elif self.args.action == 'stop':
+            self.connect()
+            self.stop()
+            self.disconnect()
+        elif self.args.action == 'shutdown':
+            self.connect()
+            self.shutdown()
+            self.disconnect()
+        elif self.args.action == 'start':
+            self.connect()
+            self.start()
+            self.disconnect()
+        elif self.args.action == 'templates':
+            self.connect()
+            self.templates()
+            self.disconnect()
+        return
+
+def parse_args():
+    # create the top-level parser
+    parser = argparse.ArgumentParser(prog='vptool', description=
+        'Tool for managing vms in a lab')
+    parser.add_argument('-v', action='store_true', help='verbose output')
+
+    subparsers = parser.add_subparsers(help='sub-command help', dest='action')
+
+    # "list" command
+    parser_a = subparsers.add_parser('list', help='list vms')
+    parser_a.add_argument('query', metavar='QUERY', nargs='?',
+                        help='search query')
+    parser_a.add_argument('--all', action='store_true', help='list all vms')
+
+    # "info" command
+    parser_b = subparsers.add_parser('info', help='get vm info')
+    parser_b.add_argument('name', help='vm name')
+    parser_b.add_argument('-i', '--ip', dest='ip',  action='store_true',
+                          help='get only IP address')
+    parser_b.add_argument('-H', '--host', dest='host',  action='store_true',
+                          help='get only hostname')
+
+    # "create" command
+    parser_b = subparsers.add_parser('create', help='create new vm')
+    parser_b.add_argument('name', help='vm name', nargs='+')
+    parser_b.add_argument('-t', '--template', dest='template', help='template name')
+
+    # "remove" command
+    parser_b = subparsers.add_parser('remove', help='remove vm')
+    parser_b.add_argument('name', help='vm name', nargs='+')
+
+    # "reboot" command
+    parser_b = subparsers.add_parser('reboot', help='reboot vm')
+    parser_b.add_argument('name', help='vm name')
+
+    # "stop" command
+    parser_b = subparsers.add_parser('stop', help='stop vm')
+    parser_b.add_argument('name', help='vm name')
+
+    # "shutdown" command
+    parser_b = subparsers.add_parser('shutdown', help='shutdown vm')
+    parser_b.add_argument('name', help='vm name')
+
+    # "start" command
+    parser_b = subparsers.add_parser('start', help='start vm')
+    parser_b.add_argument('name', help='vm name')
+
+    # "templates" command
+    parser_b = subparsers.add_parser('templates', help='list templates')
+
+    args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = parse_args()
+    try:
+        app = App(args)
+        app.run()
+    except OperationError as e:
+        print(e)
+        app.disconnect()
+        sys.exit(1)
+    except Exception as e:
+        print '***The command above has FAILED***'
+        app.disconnect()
+        raise e
