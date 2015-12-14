@@ -40,7 +40,7 @@ sudo rm -rf dist/*
 make -s all rpms 2>&1
 
 # Copy the result into DIST_DIR
-cp dist/rpms/freeipa* $DIST_DIR/
+cp dist/rpms/* $DIST_DIR/
 
 popd
 
