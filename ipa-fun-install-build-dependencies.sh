@@ -15,9 +15,7 @@ source $DIR/config.sh
 set -e
 
 pushd $IPA_DIR
-# DNF refuses to process SPEC files whose names do not end with .spec
-SPEC=$(mktemp --suffix=.spec)
-cp freeipa.spec.in "$SPEC"
-sudo $DNF builddep -y "$SPEC"
-rm "$SPEC"
+
+sudo $DNF builddep -y --spec freeipa.spec.in
+
 popd

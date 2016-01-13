@@ -28,7 +28,7 @@ class OperationError(BaseException):
 class App:
 
     def __init__(self, args):
-        self.verbose = False
+        self.verbose = args.v
         self.connected = False
         self.args = args
 
@@ -36,15 +36,19 @@ class App:
         BackendClass = getattr(backends, locals.BACKEND)
         if self.connected:
             if self.verbose:
-                show('Already connected to %s lab' % locals.BACKEND)
+                show('Already connected to %s lab: %s' %
+                    (locals.BACKEND, locals.DEFAULT_LOCATION))
             return
         if self.verbose:
-            show('Estabilishing connection to %s lab' % locals.BACKEND)
+            show('Estabilishing connection to %s lab: %s' %
+                (locals.BACKEND, locals.DEFAULT_LOCATION))
         self.backend = BackendClass(url=locals.URL,
+                               kerberos=locals.KERBEROS,
                                username=locals.USERNAME,
                                password=locals.PASSWORD,
                                cluster_name=locals.CLUSTER_NAME,
-                               ca_file=locals.CA_FILE)
+                               ca_file=locals.CA_FILE,
+                               verbose=self.verbose)
         self.connected = True
 
     def template_list(self):
@@ -52,7 +56,10 @@ class App:
         return [t.get_name() for t in tmpl_list]
 
     def disconnect(self):
+        return
         if self.connected:
+            if self.verbose:
+                show('Disconnecting')
             self.backend.api.disconnect()
         self.connected = False
 
@@ -62,16 +69,23 @@ class App:
             query = ''
         elif args.query:
             query = args.query
+        if self.verbose:
+            show('Getting vms')
         vms = self.backend.api.vms.list(query=query)
         status= ""
         for vm in vms:
             name = vm.get_name()
             ip = ''
+            fqdn = ''
             gi = vm.get_guest_info()
             if gi:
-                ip = gi.get_ips().get_ip()[0].get_address()
+                ips = gi.get_ips()
+                if ips:
+                    ip = ips.get_ip()[0].get_address()
+                fqdn = gi.fqdn
             status = vm.get_status()
-            print("{: >20} {: >20} {: >20}".format(name, ip, status.state))
+            print("{: >20} {: >20} {: >20} {: >20} ".format(
+                name, ip, status.state, fqdn))
 
         return
 
