@@ -8,11 +8,12 @@ import libvirt
 from vm import VM
 from printer import show, notify
 import locals
-
+import six
 
 class VirtBackend(object):
 
     def __init__(self):
+        self.verbose = False
         pass
 
     def create_vm(name):
@@ -27,8 +28,8 @@ class VirtBackend(object):
 
 class RHEVM(VirtBackend):
 
-    def __init__(self, url, username, password, cluster_name, ca_file,
-                 **kwargs):
+    def __init__(self, url, kerberos, username, password, cluster_name, ca_file,
+                 verbose=False, **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
@@ -36,11 +37,27 @@ class RHEVM(VirtBackend):
         self.password = password
         self.cluster = cluster_name
         self.ca_file = ca_file
+        self.kerberos = kerberos
+        self.verbose = verbose
+        self.debug = False
 
-        self.api = API(url=self.url,
-                       username=self.username,
-                       password=self.password,
-                       ca_file=self.ca_file)
+        if self.kerberos:
+            if self.verbose:
+                show("Using Kerberos authentication")
+            self.api = API(url=self.url,
+                           kerberos=True,
+                           ca_file=self.ca_file,
+                           filter=True,
+                           debug=self.debug
+                           )
+        else:
+            if self.verbose:
+                show("Using username and password: %s" % self.username)
+            self.api = API(url=self.url,
+                           username=self.username,
+                           password=self.password,
+                           ca_file=self.ca_file,
+                           debug=self.debug)
 
     def create_record(*args, **kwargs):
         pass
@@ -129,14 +146,22 @@ class RHEVM(VirtBackend):
 
         show('VM creation:')
         show.tab()
+        show('Name: %s' % name)
+        show('Template: %s' % template)
+
+        tmpl = self.api.templates.get(template)
+        if not tmpl:
+            raise ValueError('Template does not exist: %s' % template)
+
+        # # Check whether the template exist, if so, create the VM
+        # if util.get_latest_template(self.api, template) is None:
+        #     raise ValueError('Template does not exist: %s' % template)
 
         # Set VM's parameters as defined in locals.py
         pars = params.VM(name=name,
                          memory=memory,
                          cluster=self.api.clusters.get(self.cluster),
-                         template=util.get_latest_template(self.api, template))
-
-        show('Template: %s' % template)
+                         template=tmpl)
 
         # locals.HOST can be used to enforce usage of a particular host
         if locals.HOST is not None:
@@ -144,58 +169,72 @@ class RHEVM(VirtBackend):
                                          host=self.api.hosts.get(locals.HOST),
                                          affinity='pinned'))
 
-        # Check whether the template exist, if so, create the VM
-        if util.get_latest_template(self.api, template) is None:
-            raise ValueError('Template does not exist: %s' % template)
+
         vm = self.api.vms.add(pars)
         show('VM was created from Template successfully')
 
         # Set corret permissions so that VM can be seen in WebAdmin
-        admin_vm_manager_perm = params.Permission(
-                                    role=self.api.roles.get('UserVmManager'),
-                                    user=self.api.users.get('admin'))
+        if not self.kerberos:
+            admin_vm_manager_perm = params.Permission(
+                                        role=self.api.roles.get('UserVmManager'),
+                                        user=self.api.users.get('admin'))
 
-        vm.permissions.add(admin_vm_manager_perm)
-        show('Permissions for admin to see VM set')
+            vm.permissions.add(admin_vm_manager_perm)
+            show('Permissions for admin to see VM set')
 
         # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
-        while self.api.vms.get(name).status.state != 'down':
-            sleep(1)
+        state = vm.status.state
+        while state != 'down':
+            vm = self.api.vms.get(name)
+            state = vm.status.state
+            sleep(2)
 
-        return self.load_vm(name)
+        return self.load_vm(name, vm)
 
-    def start(self, name):
-        if self.api.vms.get(name).status.state == 'down':
+    def start(self, name, vm=None):
+        if not vm:
+            vm = self.api.vms.get(name)
+        state = vm.status.state
+        if state == 'down':
             show('Starting VM')
-            self.api.vms.get(name).start()
-            while self.api.vms.get(name).status.state != 'up':
-                sleep(1)
+            vm.start()
 
-    def load_vm(self, name):
-        self.start(name)
+            while state != 'up':
+                vm = self.api.vms.get(name)
+                state = vm.status.state
+                sleep(3)
+        return vm
+
+    def load_vm(self, name, vm=None):
+        if not vm:
+            vm = self.api.vms.get(name)
+        vm = self.start(name, vm)
 
         # Obtain the IP address. It can take a while for the guest agent
         # to start, so we wait 2 minutes here before giving up.
         show('Waiting to obtain IP address')
         show('Press CTRL+C to interrupt and enter manually.')
         counter = 0
+        ip = self.get_ip(vm)
         try:
-            while self.get_ip(name) is None:
+            while ip is None:
+                vm = self.api.vms.get(name)
+                ip = self.get_ip(vm)
                 counter = counter + 1
                 if counter > 120:
                     break
-                sleep(1)
+                sleep(3)
         except KeyboardInterrupt:
             counter = 100000
 
         if counter <= 120:
-            ip = self.get_ip(name)
-            last_ip_segment = ip.split('.')[-1]
+            fqdn = vm.get_guest_info().fqdn
             show("IP address of the VM is %s" % ip)
+            show("FQDN of the VM is %s" % fqdn)
         else:
             notify('Enter the IP manually.')
-
+            fqdn = ''
             last_ip_segment = ''
 
             while not (len(last_ip_segment) > 0 and len(last_ip_segment) < 4):
@@ -204,14 +243,14 @@ class RHEVM(VirtBackend):
                 ip = locals.IP_BASE + last_ip_segment
 
         # Update the description
-        hostname = util.normalize_hostname(ip)
+        #hostname = util.normalize_hostname(ip)
 
         # Set the VM's description so that it can be identified in WebAdmin
-        vm = self.api.vms.get(name)
-        vm.set_description(hostname)
-        vm.update()
-
-        show("Description set to %s" % hostname)
+        #vm = self.api.vms.get(name)
+        if fqdn:
+            vm.set_description(fqdn)
+            vm.update()
+            show("Description set to %s" % fqdn)
 
         # Necessary because of RHEV bug
         show("Pinging the VM")
@@ -219,7 +258,7 @@ class RHEVM(VirtBackend):
 
         show.untab()
 
-        return VM(name=name, backend=self, hostname=hostname,
+        return VM(name=name, backend=self, hostname=fqdn,
                   domain=locals.DOMAIN, ip=ip)
 
     def reboot(self, name):
@@ -245,10 +284,14 @@ class RHEVM(VirtBackend):
 
         show.untab()
 
-    def get_ip(self, name):
-        if self.api.vms.get(name).get_guest_info():
-            return self.api.vms.get(name).get_guest_info()\
-                       .get_ips().get_ip()[0].get_address()
+    def get_ip(self, name_or_vm):
+        vm = name_or_vm
+        if isinstance(name_or_vm, six.string_types):
+            vm = self.api.vms.get(name_or_vm)
+
+        gi = vm.get_guest_info()
+        if gi:
+            return gi.get_ips().get_ip()[0].get_address()
 
     def stop(self, name):
         if self.api.vms.get(name).status.state != 'down':
