@@ -258,5 +258,6 @@ if __name__ == '__main__':
         sys.exit(1)
     except Exception as e:
         print '***The command above has FAILED***'
-        app.disconnect()
-        raise e
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
