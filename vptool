@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import time
+import traceback
 from printer import show
 #import subprocess
 from vm import VM
@@ -258,6 +259,5 @@ if __name__ == '__main__':
         sys.exit(1)
     except Exception as e:
         print '***The command above has FAILED***'
-        import traceback
         traceback.print_exc()
         sys.exit(1)
