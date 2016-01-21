@@ -1,6 +1,10 @@
 import dbus
-import locals
-
+import sys
+try:
+    import locals
+except ImportError:
+    sys.exit("Error: configuration is missing. "
+             "Use locals.py.in as basics and create locals.py")
 
 class Printer():
 
