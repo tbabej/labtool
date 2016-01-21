@@ -150,7 +150,10 @@ class App:
         return
 
     def run(self):
-        locals.set_locale(locals.DEFAULT_LOCATION)
+        lab = locals.DEFAULT_LOCATION
+        if self.args.lab:
+            lab = self.args.lab
+        locals.set_locale(lab)
         if self.args.action == 'list':
             self.connect()
             self.list()
@@ -194,6 +197,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog='vptool', description=
         'Tool for managing vms in a lab')
     parser.add_argument('-v', action='store_true', help='verbose output')
+    parser.add_argument('-l', '--lab', dest="lab", help='lab to use')
 
     subparsers = parser.add_subparsers(help='sub-command help', dest='action')
 
