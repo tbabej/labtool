@@ -72,6 +72,7 @@ class App:
         if self.verbose:
             show('Getting vms')
         vms = self.backend.api.vms.list(query=query)
+        vms.sort(key=lambda vm: vm.get_name())
         status= ""
         for vm in vms:
             name = vm.get_name()
@@ -150,7 +151,10 @@ class App:
         return
 
     def run(self):
-        locals.set_locale(locals.DEFAULT_LOCATION)
+        lab = locals.DEFAULT_LOCATION
+        if self.args.lab:
+            lab = self.args.lab
+        locals.set_locale(lab)
         if self.args.action == 'list':
             self.connect()
             self.list()
@@ -194,6 +198,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog='vptool', description=
         'Tool for managing vms in a lab')
     parser.add_argument('-v', action='store_true', help='verbose output')
+    parser.add_argument('-l', '--lab', dest="lab", help='lab to use')
 
     subparsers = parser.add_subparsers(help='sub-command help', dest='action')
 
@@ -253,5 +258,6 @@ if __name__ == '__main__':
         sys.exit(1)
     except Exception as e:
         print '***The command above has FAILED***'
-        app.disconnect()
-        raise e
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
