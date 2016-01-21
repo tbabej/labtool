@@ -76,3 +76,10 @@ def set_locale(lab):
 
     else:
         raise ValueError("Wrong lab %s" % lab)
+
+    try:
+        open(CA_FILE).read()
+    except Exception as ex:
+        print('CA_FILE %s is not readable' % CA_FILE)
+        print('Install a CA certificate used for RHEV-M API TLS connection')
+        raise ex
