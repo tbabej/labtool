@@ -74,7 +74,7 @@ class App:
             show('Getting vms')
         vms = self.backend.api.vms.list(query=query)
         vms.sort(key=lambda vm: vm.get_name())
-        status= ""
+        state= ""
         for vm in vms:
             name = vm.get_name()
             ip = ''
@@ -85,9 +85,9 @@ class App:
                 if ips:
                     ip = ips.get_ip()[0].get_address()
                 fqdn = gi.fqdn
-            status = vm.get_status()
+            state = self.backend.get_vm_state(name, vm)
             print("{: >20} {: >20} {: >20} {: >20} ".format(
-                name, ip, status.state, fqdn))
+                name, ip, state, fqdn))
 
         return
 
