@@ -72,6 +72,7 @@ class App:
         if self.verbose:
             show('Getting vms')
         vms = self.backend.api.vms.list(query=query)
+        vms.sort(key=lambda vm: vm.get_name())
         status= ""
         for vm in vms:
             name = vm.get_name()
