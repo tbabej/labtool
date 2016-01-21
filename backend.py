@@ -16,7 +16,7 @@ class VirtBackend(object):
         self.verbose = False
         pass
 
-    def create_vm(name):
+    def create_vm(self, name):
         """
         Returns the VM object. Should require only the name parameter,
         the rest of the parameters should be either positional with defaults
@@ -59,7 +59,7 @@ class RHEVM(VirtBackend):
                            ca_file=self.ca_file,
                            debug=self.debug)
 
-    def create_record(*args, **kwargs):
+    def create_record(self, *args, **kwargs):
         pass
 
     def get_snapshot(self, name, snapshot_name):

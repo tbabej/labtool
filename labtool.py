@@ -143,8 +143,8 @@ def main(args):
             vm.prepare_replica(hostname)
 
             if args.lab[0] == 'BOS':
-                replicas.append(VM(hostname, locals.DOMAIN, backend, replica_name,
-                                 set_sudoers=False))
+                replicas.append(VM(hostname, locals.DOMAIN, backend,
+                                   replica_name))
             else:
                 replicas.append(VM(hostname, locals.DOMAIN, rhevm,
                                    replica_name))

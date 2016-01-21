@@ -24,8 +24,7 @@ def validateBuild(args):
 
         if action == 'patch':
             show('Checking whether all given patches exist.')
-            vm = VM(locals.NFS_VM, locals.DOMAIN, None, None,
-                    set_sudoers=False)
+            vm = VM(locals.NFS_VM, locals.DOMAIN, None, None)
 
             patches_exist = True
 

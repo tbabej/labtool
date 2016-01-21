@@ -1,28 +1,24 @@
 import dbus
-import locals
-
+import sys
+try:
+    import locals
+except ImportError:
+    sys.exit("Error: configuration is missing. "
+             "Use locals.py.in as basics and create locals.py")
 
 class Printer():
 
     def __init__(self):
         self.prefix = ''
-        self.silence = False
 
     def __call__(self, text):
-        if not self.silence:
-            print(self.prefix + text)
+        print(self.prefix + text)
 
     def tab(self, space=' '):
         self.prefix = self.prefix + 4 * space
 
     def untab(self):
         self.prefix = self.prefix[:-4]
-
-    def silence(self):
-        self.silence = True
-
-    def talk(self):
-        self.silence = False
 
     def debug(self, msg):
         if locals.DEBUG:

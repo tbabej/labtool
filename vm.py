@@ -41,7 +41,7 @@ class VM():
     def start(self):
         self.backend.start(self.name)
 
-    def connect(self, user=locals.USER):
+    def connect(self, user=locals.USER, pkey_path=locals.PRIVATE_KEY):
         # show('Connecting to %s' % self.fqdn)
         success = False
         timeout = 0
@@ -53,7 +53,7 @@ class VM():
                 self.client = SSHClient()
                 self.client.set_missing_host_key_policy(WarningPolicy())
                 self.client.connect(self.ip, username=user,
-                                    key_filename=locals.PRIVATE_KEY)
+                                    key_filename=pkey_path)
                 success = True
             except UserWarning:
                 show.debug('UserWarning ignored')
