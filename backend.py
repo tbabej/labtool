@@ -140,6 +140,15 @@ class RHEVM(VirtBackend):
             if self.api.vms.get(name) is not None:
                 raise ValueError('Given VM name %s is already used' % name)
 
+    def get_vm_state(self, name, vm=None):
+        # expect that self.api.vms.get(name) doesn't have to return a vm object
+        # or vm with status object
+        if not vm:
+            vm = self.api.vms.get(name)
+        if vm and vm.status:
+            return vm.status.state
+        return None
+
     def create_vm(self, name, memory=locals.MEMORY,
                   template=locals.TEMPLATE_NAME):
         """Creates a VM from given parameters and returns its hostname."""
@@ -184,10 +193,8 @@ class RHEVM(VirtBackend):
 
         # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
-        state = vm.status.state
-        while state != 'down':
+        while self.get_vm_state(name, vm) != 'down':
             vm = self.api.vms.get(name)
-            state = vm.status.state
             sleep(2)
 
         return self.load_vm(name, vm)
@@ -195,14 +202,12 @@ class RHEVM(VirtBackend):
     def start(self, name, vm=None):
         if not vm:
             vm = self.api.vms.get(name)
-        state = vm.status.state
-        if state == 'down':
+        if self.get_vm_state(name, vm) == 'down':
             show('Starting VM')
             vm.start()
 
-            while state != 'up':
+            while self.get_vm_state(name, vm) != 'up':
                 vm = self.api.vms.get(name)
-                state = vm.status.state
                 sleep(3)
         return vm
 
@@ -242,11 +247,7 @@ class RHEVM(VirtBackend):
                 "determined. Enter the VM number (no leading zeros):")
                 ip = locals.IP_BASE + last_ip_segment
 
-        # Update the description
-        #hostname = util.normalize_hostname(ip)
-
         # Set the VM's description so that it can be identified in WebAdmin
-        #vm = self.api.vms.get(name)
         if fqdn:
             vm.set_description(fqdn)
             vm.update()
@@ -269,14 +270,15 @@ class RHEVM(VirtBackend):
         vm.shutdown()
 
         show('Waiting for VM to reach Down status')
-        while self.api.vms.get(name).status.state != 'down':
+        while self.get_vm_state(name, vm) != 'down':
+            vm = self.api.vms.get(name)
             sleep(1)
 
-        if self.api.vms.get(name).status.state != 'up':
+        if self.get_vm_state(name, vm) != 'up':
             show('Starting VM')
             vm.start()
             show('Waiting for VM to reach Up status')
-            while self.api.vms.get(name).status.state != 'up':
+            while self.get_vm_state(name) != 'up':
                 sleep(1)
 
         show('Waiting for all the services to start')
@@ -294,11 +296,12 @@ class RHEVM(VirtBackend):
             return gi.get_ips().get_ip()[0].get_address()
 
     def stop(self, name):
-        if self.api.vms.get(name).status.state != 'down':
-            self.api.vms.get(name).stop()
+        vm = self.api.vms.get(name)
+        if self.get_vm_state(name, vm) != 'down':
+            vm.stop()
 
             show('Waiting for VM %s to reach Down status' % name)
-            while self.api.vms.get(name).status.state != 'down':
+            while self.get_vm_state(name) != 'down':
                 sleep(1)
 
             show('VM %s stopped successfully' % name)
@@ -309,7 +312,7 @@ class RHEVM(VirtBackend):
         self.api.vms.get(name).shutdown()
 
         show('Waiting for VM %s to reach Down status' % name)
-        while self.api.vms.get(name).status.state != 'down':
+        while self.get_vm_state(name) != 'down':
             sleep(1)
 
         show('VM %s stopped successfully' % name)
@@ -330,7 +333,7 @@ class RHEVM(VirtBackend):
             show('Vm is not running.')
             pass
 
-        while self.api.vms.get(name).status.state != 'down':
+        while self.get_vm_state(name) != 'down':
             sleep(1)
 
         vm.delete()
