@@ -157,6 +157,7 @@ class RHEVM(VirtBackend):
         show.tab()
         show('Name: %s' % name)
         show('Template: %s' % template)
+        show('Memory: %s' % memory)
 
         tmpl = self.api.templates.get(template)
         if not tmpl:
