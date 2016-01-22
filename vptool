@@ -22,7 +22,7 @@ def inspect_obj(obj, value=False):
         else:
             print '%s' % name
 
-class OperationError(BaseException):
+class OperationError(Exception):
     foo = ''
 
 
