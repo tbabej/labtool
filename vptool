@@ -22,7 +22,7 @@ def inspect_obj(obj, value=False):
         else:
             print '%s' % name
 
-class OperationError(BaseException):
+class OperationError(Exception):
     foo = ''
 
 
@@ -92,7 +92,7 @@ class App:
         return
 
     def info(self):
-        vm = self.backend.api.vms.get(self.args.name)
+        vm = self.backend.get_vm(self.args.name)
         gi = vm.get_guest_info()
         if not gi:
             return
@@ -198,7 +198,8 @@ def parse_args():
     # create the top-level parser
     parser = argparse.ArgumentParser(prog='vptool', description=
         'Tool for managing vms in a lab')
-    parser.add_argument('-v', action='store_true', help='verbose output')
+    parser.add_argument('-v', '--verbose', dest='v', action='count', default=0,
+                        help='verbose output')
     parser.add_argument('-l', '--lab', dest="lab", help='lab to use')
 
     subparsers = parser.add_subparsers(help='sub-command help', dest='action')

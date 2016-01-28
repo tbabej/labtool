@@ -13,7 +13,7 @@ import six
 class VirtBackend(object):
 
     def __init__(self):
-        self.verbose = False
+        self.verbose = 0
         pass
 
     def create_vm(self, name):
@@ -29,7 +29,7 @@ class VirtBackend(object):
 class RHEVM(VirtBackend):
 
     def __init__(self, url, username, password, cluster_name, ca_file,
-                 kerberos=None, verbose=False, **kwargs):
+                 kerberos=None, verbose=0, **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
@@ -39,7 +39,7 @@ class RHEVM(VirtBackend):
         self.ca_file = ca_file
         self.kerberos = kerberos
         self.verbose = verbose
-        self.debug = False
+        self.debug = verbose > 1
 
         if self.kerberos:
             if self.verbose:
@@ -62,8 +62,15 @@ class RHEVM(VirtBackend):
     def create_record(self, *args, **kwargs):
         pass
 
+    def get_vm(self, name, attempts=4):
+        for i in range(attempts):
+            vm = self.api.vms.get(name)
+            if vm:
+                return vm
+        raise ValueError('Given VM name %s does not exist' % name)
+
     def get_snapshot(self, name, snapshot_name):
-        candidates = [snap for snap in self.api.vms.get(name).snapshots.list()
+        candidates = [snap for snap in self.get_vm(name).snapshots.list()
                       if snap.get_description() == snapshot_name]
 
         if len(candidates) == 1:
@@ -77,12 +84,12 @@ class RHEVM(VirtBackend):
 
         self.shutdown(name)
 
-        for snap in self.api.vms.get(name).snapshots.list():
+        for snap in self.get_vm(name).snapshots.list():
             if snap.get_description() != 'Active VM':
                 show("Deleting snapshot: %s" % snap.get_description())
                 snap.delete()
 
-        while len(self.api.vms.get(name).snapshots.list()) > 1:
+        while len(self.get_vm(name).snapshots.list()) > 1:
             show("Waiting for the deletion to complete.")
             sleep(5)
 
@@ -90,11 +97,11 @@ class RHEVM(VirtBackend):
 
         try:
             snapshot = params.Snapshot(description=locals.SNAPSHOT_NAME,
-                                       vm=self.api.vms.get(name))
-            self.api.vms.get(name).snapshots.add(snapshot)
+                                       vm=self.get_vm(name))
+            self.get_vm(name).snapshots.add(snapshot)
             show("Creating a Snapshot")
             show('Waiting for Snapshot creation to finish')
-            while self.api.vms.get(name).status.state == 'image_locked':
+            while self.get_vm(name).status.state == 'image_locked':
                 sleep(5)
         except Exception as e:
             show('Failed to Create a Snapshot:\n%s' % str(e))
@@ -120,7 +127,7 @@ class RHEVM(VirtBackend):
 
         # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
-        while self.api.vms.get(name).status.state != 'down':
+        while self.get_vm(name).status.state != 'down':
             sleep(1)
 
         return self.load_vm(name)
@@ -129,23 +136,21 @@ class RHEVM(VirtBackend):
 
         if connect:
             show('Checking whether given VM exists')
-            if self.api.vms.get(name) is None:
-                raise ValueError('Given VM name %s does not exist' % name)
+            self.get_vm(name)
         else:
             show('Checking whether given template exists')
             if util.get_latest_template(self.api, template) is None:
                 raise ValueError('Template %s does not exist' % template)
 
             show('Checking whether given VM name is not used')
-            if self.api.vms.get(name) is not None:
+            if self.get_vm(name):
                 raise ValueError('Given VM name %s is already used' % name)
 
     def get_vm_state(self, name, vm=None):
-        # expect that self.api.vms.get(name) doesn't have to return a vm object
-        # or vm with status object
+        # expect that vm object doesn't have to have a status object
         if not vm:
-            vm = self.api.vms.get(name)
-        if vm and vm.status:
+            vm = self.get_vm(name)
+        if vm.status:
             return vm.status.state
         return None
 
@@ -157,6 +162,7 @@ class RHEVM(VirtBackend):
         show.tab()
         show('Name: %s' % name)
         show('Template: %s' % template)
+        show('Memory: %s' % memory)
 
         tmpl = self.api.templates.get(template)
         if not tmpl:
@@ -194,26 +200,26 @@ class RHEVM(VirtBackend):
         # VM automatically shuts down after creation
         show('Waiting for VM to reach Down status')
         while self.get_vm_state(name, vm) != 'down':
-            vm = self.api.vms.get(name)
+            vm = self.get_vm(name)
             sleep(2)
 
         return self.load_vm(name, vm)
 
     def start(self, name, vm=None):
         if not vm:
-            vm = self.api.vms.get(name)
+            vm = self.get_vm(name)
         if self.get_vm_state(name, vm) == 'down':
             show('Starting VM')
             vm.start()
 
             while self.get_vm_state(name, vm) != 'up':
-                vm = self.api.vms.get(name)
+                vm = self.get_vm(name)
                 sleep(3)
         return vm
 
     def load_vm(self, name, vm=None):
         if not vm:
-            vm = self.api.vms.get(name)
+            vm = self.get_vm(name)
         vm = self.start(name, vm)
 
         # Obtain the IP address. It can take a while for the guest agent
@@ -224,7 +230,7 @@ class RHEVM(VirtBackend):
         ip = self.get_ip(vm)
         try:
             while ip is None:
-                vm = self.api.vms.get(name)
+                vm = self.get_vm(name)
                 ip = self.get_ip(vm)
                 counter = counter + 1
                 if counter > 120:
@@ -266,12 +272,12 @@ class RHEVM(VirtBackend):
         show('Rebooting the VM:')
         show.tab()
 
-        vm = self.api.vms.get(name)
+        vm = self.get_vm(name)
         vm.shutdown()
 
         show('Waiting for VM to reach Down status')
         while self.get_vm_state(name, vm) != 'down':
-            vm = self.api.vms.get(name)
+            vm = self.get_vm(name)
             sleep(1)
 
         if self.get_vm_state(name, vm) != 'up':
@@ -289,14 +295,14 @@ class RHEVM(VirtBackend):
     def get_ip(self, name_or_vm):
         vm = name_or_vm
         if isinstance(name_or_vm, six.string_types):
-            vm = self.api.vms.get(name_or_vm)
+            vm = self.get_vm(name_or_vm)
 
         gi = vm.get_guest_info()
         if gi:
             return gi.get_ips().get_ip()[0].get_address()
 
     def stop(self, name):
-        vm = self.api.vms.get(name)
+        vm = self.get_vm(name)
         if self.get_vm_state(name, vm) != 'down':
             vm.stop()
 
@@ -309,7 +315,7 @@ class RHEVM(VirtBackend):
             show('VM %s is already stopped' % name)
 
     def shutdown(self, name):
-        self.api.vms.get(name).shutdown()
+        self.get_vm(name).shutdown()
 
         show('Waiting for VM %s to reach Down status' % name)
         while self.get_vm_state(name) != 'down':
@@ -321,8 +327,9 @@ class RHEVM(VirtBackend):
         show('Removing the VM:')
         show.tab()
 
-        vm = self.api.vms.get(name)
-        if vm is None:
+        try:
+            vm = self.get_vm(name)
+        except ValueError:
             show('Could not obtain VM. Probably does not exist.')
             return
 
@@ -341,7 +348,11 @@ class RHEVM(VirtBackend):
         show.untab()
 
     def exists(self, name):
-        return self.api.vms.get(name) is not None
+        try:
+            self.get_vm(name)
+            return True
+        except ValueError:
+            return False
 
 
 class LibVirt(VirtBackend):
