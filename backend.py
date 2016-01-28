@@ -13,7 +13,7 @@ import six
 class VirtBackend(object):
 
     def __init__(self):
-        self.verbose = False
+        self.verbose = 0
         pass
 
     def create_vm(self, name):
@@ -29,7 +29,7 @@ class VirtBackend(object):
 class RHEVM(VirtBackend):
 
     def __init__(self, url, username, password, cluster_name, ca_file,
-                 kerberos=None, verbose=False, **kwargs):
+                 kerberos=None, verbose=0, **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
@@ -39,7 +39,7 @@ class RHEVM(VirtBackend):
         self.ca_file = ca_file
         self.kerberos = kerberos
         self.verbose = verbose
-        self.debug = False
+        self.debug = verbose > 1
 
         if self.kerberos:
             if self.verbose:
