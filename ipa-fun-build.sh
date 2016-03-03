@@ -37,7 +37,7 @@ sudo chown -R $USER .
 sudo rm -rf dist/*
 
 # Build ALL the rpms
-make -s all rpms 2>&1
+make -s rpms 2>&1
 
 # Copy the result into DIST_DIR
 cp dist/rpms/* $DIST_DIR/
