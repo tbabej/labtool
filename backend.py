@@ -1,5 +1,6 @@
 from ovirtsdk.api import API
 from ovirtsdk.xml import params
+from ovirtsdk.infrastructure import errors as ovirterrors
 from time import sleep
 from lxml import etree
 import util
@@ -205,14 +206,14 @@ class RHEVM(VirtBackend):
 
         return self.load_vm(name, vm)
 
-    def start(self, name, vm=None):
+    def start(self, name, vm=None, wait=True):
         if not vm:
             vm = self.get_vm(name)
         if self.get_vm_state(name, vm) == 'down':
             show('Starting VM')
             vm.start()
 
-            while self.get_vm_state(name, vm) != 'up':
+            while wait and self.get_vm_state(name, vm) != 'up':
                 vm = self.get_vm(name)
                 sleep(3)
         return vm
@@ -353,6 +354,26 @@ class RHEVM(VirtBackend):
             return True
         except ValueError:
             return False
+
+    def console(self, name):
+        vm = self.get_vm(name)
+        virtual_viewer_params = {}
+        virtual_viewer_params['toggle-fullscreen'] = 'shift+f11'
+        virtual_viewer_params['release-cursor'] = 'shift+f12'
+        virtual_viewer_params['enable-smartcard'] = 0
+        virtual_viewer_params['fullscreen'] = 0
+        virtual_viewer_params['enable-usb-autoshare'] = 0
+        virtual_viewer_params['title'] = 'VM %s - %%d - Press SHIFT+F12 to Release Cursor' % name
+        try:
+            virtual_viewer_params['type'] = vm.display.get_type()
+            virtual_viewer_params['host'] = vm.display.address
+            virtual_viewer_params['port'] = vm.display.port
+            virtual_viewer_params['tls-port'] = vm.display.secure_port
+            virtual_viewer_params['password'] = vm.ticket().get_ticket().get_value()
+        except ovirterrors.RequestError as ex:
+            raise RuntimeError(str(ex))
+
+        return virtual_viewer_params
 
 
 class LibVirt(VirtBackend):

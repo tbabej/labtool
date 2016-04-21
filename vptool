@@ -4,9 +4,10 @@ import argparse
 import os
 import sys
 import time
+import tempfile
 import traceback
 from printer import show
-#import subprocess
+import subprocess
 from vm import VM
 
 # Import sensitive settings
@@ -129,6 +130,15 @@ class App:
             self.backend.create_vm(name, template=template)
         return
 
+    def console(self):
+        virtual_viewer_params = self.backend.console(self.args.name)
+        with tempfile.NamedTemporaryFile() as vvcfg:
+            vvcfg.write('[virt-viewer]\n')
+            for key, value in virtual_viewer_params.items():
+                vvcfg.write('%s=%s\n' % (key, value))
+            vvcfg.flush()
+            subprocess.call(['/usr/bin/remote-viewer', vvcfg.name])
+
     def remove(self):
         for name in self.args.name:
             self.backend.remove_vm(name)
@@ -143,7 +153,21 @@ class App:
         self.backend.shutdown(self.args.name)
 
     def start(self):
-        self.backend.start(self.args.name)
+        wants_console = getattr(self.args, 'wants_open_console', False)
+        self.backend.start(self.args.name,
+                           # if the user wants console ASAP do not wait until
+                           # the VM is up
+                           wait=not wants_console)
+        if wants_console:
+            while True:
+                try:
+                    self.console()
+                except RuntimeError as ex:
+                    show('Cannot open vm console, retrying: %s' % ex)
+                    time.sleep(1)  # sleep a bit
+                else:
+                    break
+
 
     def templates(self):
         tmpl_list = self.template_list()
@@ -156,42 +180,28 @@ class App:
         if self.args.lab:
             lab = self.args.lab
         locals.set_locale(lab)
+        self.connect()
         if self.args.action == 'list':
-            self.connect()
             self.list()
-            self.disconnect()
         elif self.args.action == 'info':
-            self.connect()
             self.info()
-            self.disconnect()
         elif self.args.action == 'create':
-            self.connect()
             self.create()
-            self.disconnect()
+        elif self.args.action == 'console':
+            self.console()
         elif self.args.action == 'remove':
-            self.connect()
             self.remove()
-            self.disconnect()
         elif self.args.action == 'reboot':
-            self.connect()
             self.reboot()
-            self.disconnect()
         elif self.args.action == 'stop':
-            self.connect()
             self.stop()
-            self.disconnect()
         elif self.args.action == 'shutdown':
-            self.connect()
             self.shutdown()
-            self.disconnect()
         elif self.args.action == 'start':
-            self.connect()
             self.start()
-            self.disconnect()
         elif self.args.action == 'templates':
-            self.connect()
             self.templates()
-            self.disconnect()
+        self.disconnect()
         return
 
 def parse_args():
@@ -223,6 +233,10 @@ def parse_args():
     parser_b.add_argument('name', help='vm name', nargs='+')
     parser_b.add_argument('-t', '--template', dest='template', help='template name')
 
+    # "console" command
+    parser_b = subparsers.add_parser('console', help='connect to vm console')
+    parser_b.add_argument('name', help='vm name')
+
     # "remove" command
     parser_b = subparsers.add_parser('remove', help='remove vm')
     parser_b.add_argument('name', help='vm name', nargs='+')
@@ -242,6 +256,9 @@ def parse_args():
     # "start" command
     parser_b = subparsers.add_parser('start', help='start vm')
     parser_b.add_argument('name', help='vm name')
+    parser_b.add_argument('-c', '--console', dest='wants_open_console',
+                          action='store_true', help='open vm console ASAP',
+                          default=False)
 
     # "templates" command
     parser_b = subparsers.add_parser('templates', help='list templates')
