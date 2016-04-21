@@ -156,42 +156,26 @@ class App:
         if self.args.lab:
             lab = self.args.lab
         locals.set_locale(lab)
+        self.connect()
         if self.args.action == 'list':
-            self.connect()
             self.list()
-            self.disconnect()
         elif self.args.action == 'info':
-            self.connect()
             self.info()
-            self.disconnect()
         elif self.args.action == 'create':
-            self.connect()
             self.create()
-            self.disconnect()
         elif self.args.action == 'remove':
-            self.connect()
             self.remove()
-            self.disconnect()
         elif self.args.action == 'reboot':
-            self.connect()
             self.reboot()
-            self.disconnect()
         elif self.args.action == 'stop':
-            self.connect()
             self.stop()
-            self.disconnect()
         elif self.args.action == 'shutdown':
-            self.connect()
             self.shutdown()
-            self.disconnect()
         elif self.args.action == 'start':
-            self.connect()
             self.start()
-            self.disconnect()
         elif self.args.action == 'templates':
-            self.connect()
             self.templates()
-            self.disconnect()
+        self.disconnect()
         return
 
 def parse_args():
