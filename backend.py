@@ -29,8 +29,8 @@ class VirtBackend(object):
 
 class RHEVM(VirtBackend):
 
-    def __init__(self, url, username, password, cluster_name, ca_file,
-                 kerberos=None, verbose=0, **kwargs):
+    def __init__(self, url, cluster_name, ca_file, username=None,
+                 password=None, kerberos=None, verbose=0, **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
