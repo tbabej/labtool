@@ -130,8 +130,9 @@ class RHEVM(VirtBackend):
         show('Waiting for VM to reach Down status')
         while self.get_vm(name).status.state != 'down':
             sleep(1)
-
+        show.untab()
         return self.load_vm(name)
+
 
     def check_arguments(self, name, template, connect):
 
@@ -203,7 +204,7 @@ class RHEVM(VirtBackend):
         while self.get_vm_state(name, vm) != 'down':
             vm = self.get_vm(name)
             sleep(2)
-
+        show.untab()
         return self.load_vm(name, vm)
 
     def start(self, name, vm=None, wait=True):
