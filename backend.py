@@ -29,8 +29,8 @@ class VirtBackend(object):
 
 class RHEVM(VirtBackend):
 
-    def __init__(self, url, username, password, cluster_name, ca_file,
-                 kerberos=None, verbose=0, **kwargs):
+    def __init__(self, url, cluster_name, ca_file, username=None,
+                 password=None, kerberos=None, verbose=0, **kwargs):
         super(RHEVM, self).__init__()
 
         self.url = url
@@ -130,7 +130,7 @@ class RHEVM(VirtBackend):
         show('Waiting for VM to reach Down status')
         while self.get_vm(name).status.state != 'down':
             sleep(1)
-
+        show.untab()
         return self.load_vm(name)
 
     def check_arguments(self, name, template, connect):
@@ -180,7 +180,7 @@ class RHEVM(VirtBackend):
                          template=tmpl)
 
         # locals.HOST can be used to enforce usage of a particular host
-        if locals.HOST is not None:
+        if locals.HOST:
             pars.set_placement_policy(params.VmPlacementPolicy(
                                          host=self.api.hosts.get(locals.HOST),
                                          affinity='pinned'))
@@ -203,8 +203,8 @@ class RHEVM(VirtBackend):
         while self.get_vm_state(name, vm) != 'down':
             vm = self.get_vm(name)
             sleep(2)
-
-        return self.load_vm(name, vm)
+        show.untab()
+        return vm
 
     def start(self, name, vm=None, wait=True):
         if not vm:
