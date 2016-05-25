@@ -181,7 +181,7 @@ class RHEVM(VirtBackend):
                          template=tmpl)
 
         # locals.HOST can be used to enforce usage of a particular host
-        if locals.HOST is not None:
+        if locals.HOST:
             pars.set_placement_policy(params.VmPlacementPolicy(
                                          host=self.api.hosts.get(locals.HOST),
                                          affinity='pinned'))
