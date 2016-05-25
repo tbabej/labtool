@@ -133,7 +133,6 @@ class RHEVM(VirtBackend):
         show.untab()
         return self.load_vm(name)
 
-
     def check_arguments(self, name, template, connect):
 
         if connect:
@@ -205,7 +204,7 @@ class RHEVM(VirtBackend):
             vm = self.get_vm(name)
             sleep(2)
         show.untab()
-        return self.load_vm(name, vm)
+        return vm
 
     def start(self, name, vm=None, wait=True):
         if not vm:
