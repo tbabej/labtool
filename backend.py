@@ -92,7 +92,7 @@ class RHEVM(VirtBackend):
 
         while len(self.get_vm(name).snapshots.list()) > 1:
             show("Waiting for the deletion to complete.")
-            sleep(5)
+            sleep(15)
 
         show.untab()
 
@@ -103,7 +103,7 @@ class RHEVM(VirtBackend):
             show("Creating a Snapshot")
             show('Waiting for Snapshot creation to finish')
             while self.get_vm(name).status.state == 'image_locked':
-                sleep(5)
+                sleep(15)
         except Exception as e:
             show('Failed to Create a Snapshot:\n%s' % str(e))
 
@@ -278,14 +278,14 @@ class RHEVM(VirtBackend):
         show('Waiting for VM to reach Down status')
         while self.get_vm_state(name, vm) != 'down':
             vm = self.get_vm(name)
-            sleep(5)
+            sleep(15)
 
         if self.get_vm_state(name, vm) != 'up':
             show('Starting VM')
             vm.start()
             show('Waiting for VM to reach Up status')
             while self.get_vm_state(name) != 'up':
-                sleep(1)
+                sleep(15)
 
         show('Waiting for all the services to start')
         sleep(60)
@@ -341,7 +341,7 @@ class RHEVM(VirtBackend):
             pass
 
         while self.get_vm_state(name) != 'down':
-            sleep(1)
+            sleep(10)
 
         vm.delete()
         show('{name} was removed.'.format(name=name))
