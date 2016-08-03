@@ -93,20 +93,16 @@ class App:
         return
 
     def info(self):
-        ips = self.backend.get_ips(self.args.name)
+        if not any((self.args.ip, self.args.host)):
+            self.args.ip = True
+            self.args.host = True
         if self.args.ip:
-            if ips:
-                print(repr(ips))
-                print(ips[0])
-            return
+            ips = self.backend.get_ips(self.args.name)
+            print(" ".join(ips))
 
-        hostname = self.backend.get_hostname(self.args.name)
         if self.args.host:
+            hostname = self.backend.get_hostname(self.args.name)
             print(hostname)
-            return
-
-        print(" ".join(ips))
-        print(hostname)
 
     def create(self):
         template = self.args.template
