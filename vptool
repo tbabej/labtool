@@ -128,6 +128,8 @@ class App:
 
         for name in names:
             self.backend.create_vm(name, template=template)
+            if self.args.start:
+                self.backend.start(name, wait=False)
         return
 
     def console(self):
@@ -232,7 +234,9 @@ def parse_args():
     parser_b = subparsers.add_parser('create', help='create new vm')
     parser_b.add_argument('name', help='vm name', nargs='+')
     parser_b.add_argument('-t', '--template', dest='template', help='template name')
-
+    parser_b.add_argument('-s', '--start', dest='start',
+                          action='store_true', help='start VM',
+                          default=False)
     # "console" command
     parser_b = subparsers.add_parser('console', help='connect to vm console')
     parser_b.add_argument('name', help='vm name')
