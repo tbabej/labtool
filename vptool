@@ -93,23 +93,20 @@ class App:
         return
 
     def info(self):
-        vm = self.backend.get_vm(self.args.name)
-        gi = vm.get_guest_info()
-        if not gi:
-            return
-
-        ip = gi.get_ips().get_ip()[0].get_address()
-
+        ips = self.backend.get_ips(self.args.name)
         if self.args.ip:
-            print ip
+            if ips:
+                print(repr(ips))
+                print(ips[0])
             return
 
+        hostname = self.backend.get_hostname(self.args.name)
         if self.args.host:
-            print gi.fqdn
+            print(hostname)
             return
 
-        print ip
-        print gi.fqdn
+        print(" ".join(ips))
+        print(hostname)
 
     def create(self):
         template = self.args.template
