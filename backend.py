@@ -70,6 +70,20 @@ class RHEVM(VirtBackend):
                 return vm
         raise ValueError('Given VM name %s does not exist' % name)
 
+    def get_ips(self, name):
+        vm = self.get_vm(name)
+        gi = vm.get_guest_info()
+        if not gi:
+            return []
+        return [addr.get_address() for addr in gi.get_ips().get_ip()]
+
+    def get_hostname(self, name):
+        vm = self.get_vm(name)
+        gi = vm.get_guest_info()
+        if not gi:
+            return []
+        return gi.fqdn
+
     def get_snapshot(self, name, snapshot_name):
         candidates = [snap for snap in self.get_vm(name).snapshots.list()
                       if snap.get_description() == snapshot_name]
