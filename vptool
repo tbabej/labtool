@@ -66,14 +66,9 @@ class App:
         self.connected = False
 
     def list(self):
-        query = locals.USER
-        if args.all:
-            query = ''
-        elif args.query:
-            query = args.query
         if self.verbose:
             show('Getting vms')
-        vms = self.backend.api.vms.list(query=query)
+        vms = self.backend.api.vms.list()
         vms.sort(key=lambda vm: vm.get_name())
         state= ""
         for vm in vms:
@@ -211,8 +206,6 @@ def parse_args():
 
     # "list" command
     parser_a = subparsers.add_parser('list', help='list vms')
-    parser_a.add_argument('query', metavar='QUERY', nargs='?',
-                        help='search query')
     parser_a.add_argument('--all', action='store_true', help='list all vms')
 
     # "info" command
