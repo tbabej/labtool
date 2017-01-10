@@ -115,6 +115,8 @@ class App:
             template = locals.TEMPLATE_NAME
 
         for name in names:
+            if self.args.remove:
+                self.backend.remove_vm(name)
             self.backend.create_vm(name, template=template)
             if self.args.start:
                 self.backend.start(name, wait=False)
@@ -222,6 +224,9 @@ def parse_args():
     parser_b.add_argument('-t', '--template', dest='template', help='template name')
     parser_b.add_argument('-s', '--start', dest='start',
                           action='store_true', help='start VM',
+                          default=False)
+    parser_b.add_argument('-d', '--remove', dest='remove',
+                          action='store_true', help='remove VM before creation',
                           default=False)
     # "console" command
     parser_b = subparsers.add_parser('console', help='connect to vm console')
