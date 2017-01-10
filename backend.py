@@ -65,9 +65,9 @@ class RHEVM(VirtBackend):
 
     def get_vm(self, name, attempts=4):
         for i in range(attempts):
-            vm = self.api.vms.get(name)
-            if vm:
-                return vm
+            vms = self.api.vms.list(name=name)
+            if vms:
+                return vms[0]
         raise ValueError('Given VM name %s does not exist' % name)
 
     def get_ips(self, name):
