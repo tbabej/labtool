@@ -178,13 +178,9 @@ class RHEVM(VirtBackend):
         show('Template: %s' % template)
         show('Memory: %s' % memory)
 
-        tmpl = self.api.templates.get(template)
+        tmpl = util.get_latest_template(self.api, template)
         if not tmpl:
             raise ValueError('Template does not exist: %s' % template)
-
-        # # Check whether the template exist, if so, create the VM
-        # if util.get_latest_template(self.api, template) is None:
-        #     raise ValueError('Template does not exist: %s' % template)
 
         # Set VM's parameters as defined in locals.py
         pars = params.VM(name=name,
